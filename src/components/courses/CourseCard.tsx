@@ -11,7 +11,15 @@ interface CourseCardProps {
   price: number | 'Free';
 }
 
-const CourseCard = ({ id, title, instructor, thumbnailUrl, level, duration, price }: CourseCardProps) => {
+const CourseCard = ({
+  id,
+  title,
+  instructor,
+  thumbnailUrl,
+  level,
+  duration,
+  price,
+}: CourseCardProps) => {
   const getLevelColor = (level: string) => {
     switch (level) {
       case 'beginner':
@@ -38,20 +46,24 @@ const CourseCard = ({ id, title, instructor, thumbnailUrl, level, duration, pric
       </div>
       <div className="p-5">
         <div className="flex justify-between items-center mb-2">
-          <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getLevelColor(level)} capitalize`}>
+          <span
+            className={`text-xs font-semibold px-2 py-1 rounded-full ${getLevelColor(level)} capitalize`}
+          >
             {level}
           </span>
           <span className="text-sm text-gray-500">{duration}</span>
         </div>
         <Link href={`/courses/${id}`}>
-          <h3 className="text-xl font-semibold mb-2 hover:text-indigo-600 transition-colors">{title}</h3>
+          <h3 className="text-xl font-semibold mb-2 hover:text-indigo-600 transition-colors">
+            {title}
+          </h3>
         </Link>
         <p className="text-gray-600 text-sm mb-4">By {instructor}</p>
         <div className="flex justify-between items-center">
           <span className="font-bold text-lg">
             {typeof price === 'number' ? `$${price.toFixed(2)}` : price}
           </span>
-          <Link 
+          <Link
             href={`/courses/${id}`}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
           >
@@ -63,4 +75,4 @@ const CourseCard = ({ id, title, instructor, thumbnailUrl, level, duration, pric
   );
 };
 
-export default CourseCard; 
+export default CourseCard;

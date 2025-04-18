@@ -8,7 +8,8 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'LMS Platform | Learn, Connect, Grow',
-  description: 'Your all-in-one platform for online courses, events, job opportunities, and mentorship programs.',
+  description:
+    'Your all-in-one platform for online courses, events, job opportunities, and mentorship programs.',
 };
 
 export default function RootLayout({

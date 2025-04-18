@@ -13,7 +13,16 @@ interface EventCardProps {
   type: 'webinar' | 'workshop' | 'conference' | 'other';
 }
 
-const EventCard = ({ id, title, description, thumbnailUrl, startDate, endDate, location, type }: EventCardProps) => {
+const EventCard = ({
+  id,
+  title,
+  description,
+  thumbnailUrl,
+  startDate,
+  endDate,
+  location,
+  type,
+}: EventCardProps) => {
   const formatDate = (date: Date) => {
     return format(date, 'MMM dd, yyyy • h:mm a');
   };
@@ -42,38 +51,73 @@ const EventCard = ({ id, title, description, thumbnailUrl, startDate, endDate, l
           className="transition-transform duration-300 hover:scale-105"
         />
         <div className="absolute top-4 left-4">
-          <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getEventTypeColor(type)} capitalize`}>
+          <span
+            className={`text-xs font-semibold px-2 py-1 rounded-full ${getEventTypeColor(type)} capitalize`}
+          >
             {type}
           </span>
         </div>
       </div>
       <div className="p-5">
         <Link href={`/events/${id}`}>
-          <h3 className="text-xl font-semibold mb-2 hover:text-indigo-600 transition-colors">{title}</h3>
+          <h3 className="text-xl font-semibold mb-2 hover:text-indigo-600 transition-colors">
+            {title}
+          </h3>
         </Link>
         <p className="text-gray-600 text-sm mb-4 line-clamp-2">{description}</p>
-        
+
         <div className="mb-4">
           <div className="flex items-start mb-2">
-            <svg className="w-5 h-5 text-gray-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            <svg
+              className="w-5 h-5 text-gray-500 mr-2 mt-0.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              ></path>
             </svg>
             <div>
               <p className="text-sm text-gray-700">{formatDate(startDate)}</p>
-              {endDate && <p className="text-sm text-gray-700">to {formatDate(endDate)}</p>}
+              {endDate && (
+                <p className="text-sm text-gray-700">
+                  to {formatDate(endDate)}
+                </p>
+              )}
             </div>
           </div>
           <div className="flex items-start">
-            <svg className="w-5 h-5 text-gray-500 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            <svg
+              className="w-5 h-5 text-gray-500 mr-2 mt-0.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              ></path>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              ></path>
             </svg>
             <p className="text-sm text-gray-700">{location}</p>
           </div>
         </div>
-        
+
         <div className="flex justify-end">
-          <Link 
+          <Link
             href={`/events/${id}`}
             className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
           >
@@ -85,4 +129,4 @@ const EventCard = ({ id, title, description, thumbnailUrl, startDate, endDate, l
   );
 };
 
-export default EventCard; 
+export default EventCard;

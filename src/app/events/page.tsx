@@ -19,7 +19,8 @@ const mockEvents: MockEvent[] = [
   {
     id: '1',
     title: 'Web Development Trends 2023',
-    description: 'Join us for an insightful webinar on the latest trends in web development. Learn about new frameworks, tools, and best practices.',
+    description:
+      'Join us for an insightful webinar on the latest trends in web development. Learn about new frameworks, tools, and best practices.',
     thumbnailUrl: '/assets/events/webdev-trends.jpg',
     startDate: new Date('2023-12-15T18:00:00'),
     endDate: new Date('2023-12-15T20:00:00'),
@@ -29,7 +30,8 @@ const mockEvents: MockEvent[] = [
   {
     id: '2',
     title: 'Hands-on React Workshop',
-    description: 'A practical workshop where you will build a complete React application from scratch. Perfect for intermediate developers looking to level up.',
+    description:
+      'A practical workshop where you will build a complete React application from scratch. Perfect for intermediate developers looking to level up.',
     thumbnailUrl: '/assets/events/react-workshop.jpg',
     startDate: new Date('2023-12-20T09:00:00'),
     endDate: new Date('2023-12-21T17:00:00'),
@@ -39,7 +41,8 @@ const mockEvents: MockEvent[] = [
   {
     id: '3',
     title: 'Laravel Conference 2023',
-    description: 'The biggest Laravel event of the year featuring speakers from the core team and community. Networking opportunities and hands-on sessions.',
+    description:
+      'The biggest Laravel event of the year featuring speakers from the core team and community. Networking opportunities and hands-on sessions.',
     thumbnailUrl: '/assets/events/laravel-conf.jpg',
     startDate: new Date('2024-01-10T08:00:00'),
     endDate: new Date('2024-01-12T18:00:00'),
@@ -49,7 +52,8 @@ const mockEvents: MockEvent[] = [
   {
     id: '4',
     title: 'UI/UX Design Masterclass',
-    description: 'Learn the principles of effective UI/UX design and how to create user-centered interfaces that convert and engage.',
+    description:
+      'Learn the principles of effective UI/UX design and how to create user-centered interfaces that convert and engage.',
     thumbnailUrl: '/assets/events/uiux-masterclass.jpg',
     startDate: new Date('2024-01-25T14:00:00'),
     endDate: new Date('2024-01-25T17:00:00'),
@@ -63,9 +67,12 @@ export default function EventsPage() {
     <div className="bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">Upcoming Events</h1>
+          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+            Upcoming Events
+          </h1>
           <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
-            Join our webinars, workshops, and conferences to expand your knowledge and network with fellow professionals.
+            Join our webinars, workshops, and conferences to expand your
+            knowledge and network with fellow professionals.
           </p>
         </div>
 
@@ -99,8 +106,19 @@ export default function EventsPage() {
                 placeholder="Search events..."
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64"
               />
-              <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              <svg
+                className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                ></path>
               </svg>
             </div>
           </div>
@@ -122,4 +140,4 @@ export default function EventsPage() {
       </div>
     </div>
   );
-} 
+}

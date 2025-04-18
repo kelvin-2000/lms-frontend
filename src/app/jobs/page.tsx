@@ -103,9 +103,12 @@ export default function JobsPage() {
     <div className="bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">Job Opportunities</h1>
+          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+            Job Opportunities
+          </h1>
           <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
-            Discover career opportunities that match your skills and aspirations in tech, development, and design.
+            Discover career opportunities that match your skills and aspirations
+            in tech, development, and design.
           </p>
         </div>
 
@@ -141,8 +144,19 @@ export default function JobsPage() {
                 placeholder="Search jobs..."
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64"
               />
-              <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              <svg
+                className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                ></path>
               </svg>
             </div>
           </div>
@@ -158,19 +172,34 @@ export default function JobsPage() {
         {/* Pagination */}
         <div className="mt-12 flex justify-center">
           <nav className="inline-flex rounded-md shadow">
-            <a href="#" className="px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+            <a
+              href="#"
+              className="px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+            >
               Previous
             </a>
-            <a href="#" className="px-4 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium text-indigo-600 hover:bg-gray-50">
+            <a
+              href="#"
+              className="px-4 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium text-indigo-600 hover:bg-gray-50"
+            >
               1
             </a>
-            <a href="#" className="px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+            <a
+              href="#"
+              className="px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+            >
               2
             </a>
-            <a href="#" className="px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+            <a
+              href="#"
+              className="px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+            >
               3
             </a>
-            <a href="#" className="px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+            <a
+              href="#"
+              className="px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
+            >
               Next
             </a>
           </nav>
@@ -178,4 +207,4 @@ export default function JobsPage() {
       </div>
     </div>
   );
-} 
+}

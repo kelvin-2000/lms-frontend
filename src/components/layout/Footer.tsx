@@ -8,14 +8,18 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4">LMS Platform</h3>
             <p className="text-gray-300">
-              Your all-in-one platform for learning, networking, and career growth.
+              Your all-in-one platform for learning, networking, and career
+              growth.
             </p>
           </div>
           <div>
             <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/courses" className="text-gray-300 hover:text-white">
+                <Link
+                  href="/courses"
+                  className="text-gray-300 hover:text-white"
+                >
                   Courses
                 </Link>
               </li>
@@ -30,7 +34,10 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/mentorship" className="text-gray-300 hover:text-white">
+                <Link
+                  href="/mentorship"
+                  className="text-gray-300 hover:text-white"
+                >
                   Mentorship
                 </Link>
               </li>
@@ -45,7 +52,10 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-gray-300 hover:text-white">
+                <Link
+                  href="/contact"
+                  className="text-gray-300 hover:text-white"
+                >
                   Contact Us
                 </Link>
               </li>
@@ -65,7 +75,10 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="text-gray-300 hover:text-white">
+                <Link
+                  href="/privacy"
+                  className="text-gray-300 hover:text-white"
+                >
                   Privacy Policy
                 </Link>
               </li>
@@ -82,4 +95,4 @@ const Footer = () => {
   );
 };
 
-export default Footer; 
+export default Footer;

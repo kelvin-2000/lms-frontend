@@ -20,7 +20,8 @@ const mockMentorships: MockMentorship[] = [
   {
     id: '1',
     title: 'Frontend Development Career Guidance',
-    description: 'Get personalized guidance on building a successful career in frontend development. Topics include portfolio building, interview preparation, and skill development.',
+    description:
+      'Get personalized guidance on building a successful career in frontend development. Topics include portfolio building, interview preparation, and skill development.',
     mentorName: 'Jennifer Adams',
     mentorAvatar: '/assets/mentors/jennifer.jpg',
     mentorTitle: 'Senior Frontend Developer at TechCorp',
@@ -31,7 +32,8 @@ const mockMentorships: MockMentorship[] = [
   {
     id: '2',
     title: 'Backend Development with Laravel',
-    description: 'Enhance your Laravel skills with hands-on mentorship focused on best practices, architecture patterns, and advanced features.',
+    description:
+      'Enhance your Laravel skills with hands-on mentorship focused on best practices, architecture patterns, and advanced features.',
     mentorName: 'Michael Johnson',
     mentorAvatar: '/assets/mentors/michael.jpg',
     mentorTitle: 'Lead Laravel Developer at WebSolutions',
@@ -42,7 +44,8 @@ const mockMentorships: MockMentorship[] = [
   {
     id: '3',
     title: 'UI/UX Design Principles',
-    description: 'Learn the fundamentals of effective UI/UX design through real-world projects and feedback sessions.',
+    description:
+      'Learn the fundamentals of effective UI/UX design through real-world projects and feedback sessions.',
     mentorName: 'Sarah Williams',
     mentorAvatar: '/assets/mentors/sarah.jpg',
     mentorTitle: 'Senior Designer at Creative Studio',
@@ -53,7 +56,8 @@ const mockMentorships: MockMentorship[] = [
   {
     id: '4',
     title: 'Full-Stack Web Development',
-    description: 'Comprehensive mentorship covering both frontend and backend development, with focus on building complete web applications.',
+    description:
+      'Comprehensive mentorship covering both frontend and backend development, with focus on building complete web applications.',
     mentorName: 'David Chen',
     mentorAvatar: '/assets/mentors/david.jpg',
     mentorTitle: 'CTO at TechStartup',
@@ -64,7 +68,8 @@ const mockMentorships: MockMentorship[] = [
   {
     id: '5',
     title: 'Mobile App Development',
-    description: 'Guidance on building mobile applications with React Native or Flutter, including deployment and app store optimization.',
+    description:
+      'Guidance on building mobile applications with React Native or Flutter, including deployment and app store optimization.',
     mentorName: 'Emily Rogers',
     mentorAvatar: '/assets/mentors/emily.jpg',
     mentorTitle: 'Mobile Development Lead at AppWorks',
@@ -75,7 +80,8 @@ const mockMentorships: MockMentorship[] = [
   {
     id: '6',
     title: 'Career Transition to Tech',
-    description: 'Support for professionals transitioning to tech careers from other fields, with focus on leveraging transferable skills.',
+    description:
+      'Support for professionals transitioning to tech careers from other fields, with focus on leveraging transferable skills.',
     mentorName: 'Robert Miller',
     mentorAvatar: '/assets/mentors/robert.jpg',
     mentorTitle: 'Engineering Manager & Career Coach',
@@ -90,15 +96,20 @@ export default function MentorshipPage() {
     <div className="bg-gray-50 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">Mentorship Programs</h1>
+          <h1 className="text-3xl font-bold text-gray-900 sm:text-4xl">
+            Mentorship Programs
+          </h1>
           <p className="mt-4 text-lg text-gray-600 max-w-3xl mx-auto">
-            Connect with experienced mentors who can guide you on your learning journey and help you achieve your career goals.
+            Connect with experienced mentors who can guide you on your learning
+            journey and help you achieve your career goals.
           </p>
         </div>
 
         {/* How It Works Section */}
         <div className="bg-white rounded-lg shadow-sm p-8 mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">How Mentorship Works</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+            How Mentorship Works
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -106,7 +117,8 @@ export default function MentorshipPage() {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Apply</h3>
               <p className="text-gray-600">
-                Browse through available mentorship programs and apply to the ones that match your goals.
+                Browse through available mentorship programs and apply to the
+                ones that match your goals.
               </p>
             </div>
             <div className="text-center">
@@ -115,7 +127,8 @@ export default function MentorshipPage() {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Match</h3>
               <p className="text-gray-600">
-                If selected, you'll be matched with your mentor and receive a program schedule.
+                If selected, you'll be matched with your mentor and receive a
+                program schedule.
               </p>
             </div>
             <div className="text-center">
@@ -124,7 +137,8 @@ export default function MentorshipPage() {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Grow</h3>
               <p className="text-gray-600">
-                Attend regular sessions, complete assignments, and receive personalized guidance.
+                Attend regular sessions, complete assignments, and receive
+                personalized guidance.
               </p>
             </div>
           </div>
@@ -162,8 +176,19 @@ export default function MentorshipPage() {
                 placeholder="Search mentorships..."
                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-64"
               />
-              <svg className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              <svg
+                className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                ></path>
               </svg>
             </div>
           </div>
@@ -178,9 +203,12 @@ export default function MentorshipPage() {
 
         {/* Become a Mentor CTA */}
         <div className="mt-16 bg-indigo-600 rounded-lg shadow-lg p-8 text-center">
-          <h2 className="text-2xl font-bold text-white mb-4">Want to Share Your Knowledge?</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">
+            Want to Share Your Knowledge?
+          </h2>
           <p className="text-indigo-100 mb-6 max-w-2xl mx-auto">
-            If you're an experienced professional looking to give back to the community, consider becoming a mentor.
+            If you're an experienced professional looking to give back to the
+            community, consider becoming a mentor.
           </p>
           <a
             href="/mentorship/apply"
@@ -192,4 +220,4 @@ export default function MentorshipPage() {
       </div>
     </div>
   );
-} 
+}
