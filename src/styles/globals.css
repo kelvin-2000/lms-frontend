@@ -26,6 +26,13 @@ body {
     rgb(var(--background-start-rgb));
 }
 
+@media (min-width: 768px) {
+  .md\:text-5xl {
+      font-size: 3rem /* 48px */;
+      line-height: 3.5rem!important;
+  }
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;

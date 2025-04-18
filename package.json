@@ -12,6 +12,7 @@
     "format": "prettier --write \"./**/*.tsx\" \"./**/*.ts\""
   },
   "dependencies": {
+    "date-fns": "^4.1.0",
     "next": "14.2.4",
     "react": "^18",
     "react-dom": "^18"
