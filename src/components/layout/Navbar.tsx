@@ -47,13 +47,13 @@ const Navbar = () => {
           </div>
           <div className="hidden sm:flex sm:items-center">
             <Link
-              href="/login"
+              href="/auth/login"
               className="px-4 py-2 text-base font-medium text-gray-700 hover:text-indigo-600"
             >
               Login
             </Link>
             <Link
-              href="/register"
+              href="/auth/register"
               className="ml-3 px-4 py-2 rounded-md text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
             >
               Sign Up
@@ -135,13 +135,13 @@ const Navbar = () => {
           <div className="pt-4 pb-3 border-t border-gray-200">
             <div className="flex items-center px-4">
               <Link
-                href="/login"
+                href="/auth/login"
                 className="block px-4 py-2 text-base font-medium text-gray-700 hover:text-indigo-600"
               >
                 Login
               </Link>
               <Link
-                href="/register"
+                href="/auth/register"
                 className="block px-4 py-2 text-base font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
               >
                 Sign Up

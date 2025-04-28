@@ -25,7 +25,7 @@ export default function Home() {
                   Explore Courses
                 </Link>
                 <Link
-                  href="/register"
+                  href="/auth/register"
                   className="px-5 py-2 text-lg bg-transparent border-2 border-white text-white font-medium rounded-lg hover:bg-white/10 transition-colors"
                 >
                   Join Now
