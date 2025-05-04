@@ -7,7 +7,8 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Authentication | LMS Platform',
-  description: 'Sign in or create an account on our learning management system.',
+  description:
+    'Sign in or create an account on our learning management system.',
 };
 
 export default function AuthLayout({
@@ -20,9 +21,7 @@ export default function AuthLayout({
       <head>
         <link rel="icon" href="/assets/favicon.ico" sizes="any" />
       </head>
-      <body className={inter.className}>
-        {children}
-      </body>
+      <body className={inter.className}>{children}</body>
     </html>
   );
-} 
+}

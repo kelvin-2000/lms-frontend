@@ -1,10 +1,25 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import authService from '@/services/auth.service';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, clearAuth } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await authService.logout();
+      clearAuth();
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // You might want to show an error message to the user here
+    }
+  };
 
   return (
     <nav className="bg-white shadow-md">
@@ -46,18 +61,55 @@ const Navbar = () => {
             </div>
           </div>
           <div className="hidden sm:flex sm:items-center">
-            <Link
-              href="/auth/login"
-              className="px-4 py-2 text-base font-medium text-gray-700 hover:text-indigo-600"
-            >
-              Login
-            </Link>
-            <Link
-              href="/auth/register"
-              className="ml-3 px-4 py-2 rounded-md text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-            >
-              Sign Up
-            </Link>
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    {user.avatar ? (
+                      <Image
+                        className="h-8 w-8 rounded-full"
+                        src={user.avatar}
+                        alt={user.name}
+                        width={32}
+                        height={32}
+                      />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                        <span className="text-indigo-600 font-medium">
+                          {user.name.charAt(0)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-base font-medium text-gray-700">
+                      Welcome, {user.name}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="mt-0 rounded-md text-base font-medium text-[red]"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link
+                  href="/auth/login"
+                  className="px-4 py-2 text-base font-medium text-gray-700 hover:text-indigo-600"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/auth/register"
+                  className="ml-3 px-4 py-2 rounded-md text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
           <div className="flex items-center sm:hidden">
             <button
@@ -133,20 +185,55 @@ const Navbar = () => {
             </Link>
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">
-            <div className="flex items-center px-4">
-              <Link
-                href="/auth/login"
-                className="block px-4 py-2 text-base font-medium text-gray-700 hover:text-indigo-600"
-              >
-                Login
-              </Link>
-              <Link
-                href="/auth/register"
-                className="block px-4 py-2 text-base font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
-              >
-                Sign Up
-              </Link>
-            </div>
+            {user ? (
+              <div className="px-4">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    {user.avatar ? (
+                      <Image
+                        className="h-8 w-8 rounded-full"
+                        src={user.avatar}
+                        alt={user.name}
+                        width={32}
+                        height={32}
+                      />
+                    ) : (
+                      <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                        <span className="text-indigo-600 font-medium">
+                          {user.name.charAt(0)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-base font-medium text-gray-700">
+                      Welcome, {user.name}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="mt-0 rounded-md text-base font-medium text-[red]"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center px-4">
+                <Link
+                  href="/auth/login"
+                  className="block px-4 py-2 text-base font-medium text-gray-700 hover:text-indigo-600"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/auth/register"
+                  className="block px-4 py-2 text-base font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}
