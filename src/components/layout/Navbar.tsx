@@ -39,10 +39,21 @@ const Navbar = () => {
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
               <Link
-                href={isAdmin ? '/admin' : '/'}
+                href={
+                  isAdmin &&
+                  (user?.role === 'admin' || user?.role === 'instructor')
+                    ? '/admin'
+                    : '/'
+                }
                 className="text-2xl font-bold text-indigo-600"
               >
-                {isAdmin ? 'Admin Dashboard' : 'LMS Platform'}
+                {isAdmin
+                  ? user?.role === 'admin'
+                    ? 'Admin Dashboard'
+                    : user?.role === 'instructor'
+                      ? 'Instructor Dashboard'
+                      : 'LMS Platform'
+                  : 'LMS Platform'}
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:items-center">
@@ -58,7 +69,11 @@ const Navbar = () => {
                   Courses
                 </Link>
                 <Link
-                  href={isAdmin ? '/admin/events' : '/events'}
+                  href={
+                    isAdmin && user?.role === 'admin'
+                      ? '/admin/events'
+                      : '/events'
+                  }
                   className={`px-3 py-2 rounded-md text-base font-medium ${
                     isActive(isAdmin ? '/admin/events' : '/events')
                       ? 'text-indigo-600 border-b-2 border-indigo-600'
@@ -68,7 +83,9 @@ const Navbar = () => {
                   Events
                 </Link>
                 <Link
-                  href={isAdmin ? '/admin/jobs' : '/jobs'}
+                  href={
+                    isAdmin && user?.role === 'admin' ? '/admin/jobs' : '/jobs'
+                  }
                   className={`px-3 py-2 rounded-md text-base font-medium ${
                     isActive(isAdmin ? '/admin/jobs' : '/jobs')
                       ? 'text-indigo-600 border-b-2 border-indigo-600'
@@ -78,7 +95,11 @@ const Navbar = () => {
                   Jobs
                 </Link>
                 <Link
-                  href={isAdmin ? '/admin/mentorship' : '/mentorship'}
+                  href={
+                    isAdmin && user?.role === 'admin'
+                      ? '/admin/mentorship'
+                      : '/mentorship'
+                  }
                   className={`px-3 py-2 rounded-md text-base font-medium ${
                     isActive(isAdmin ? '/admin/mentorship' : '/mentorship')
                       ? 'text-indigo-600 border-b-2 border-indigo-600'
@@ -87,26 +108,31 @@ const Navbar = () => {
                 >
                   Mentorship
                 </Link>
-                {user && user.role === 'admin' && !isAdmin && (
-                  <Link
-                    href="/admin"
-                    className={`px-3 py-2 rounded-md text-base font-medium ${
-                      isActive('/admin')
-                        ? 'text-indigo-600 border-b-2 border-indigo-600'
-                        : 'text-gray-700 hover:text-indigo-600'
-                    }`}
-                  >
-                    Admin Dashboard
-                  </Link>
-                )}
-                {isAdmin && (
-                  <Link
-                    href="/"
-                    className="px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600"
-                  >
-                    Back to Home
-                  </Link>
-                )}
+                {user &&
+                  (user.role === 'admin' || user.role === 'instructor') &&
+                  !isAdmin && (
+                    <Link
+                      href="/admin"
+                      className={`px-3 py-2 rounded-md text-base font-medium ${
+                        isActive('/admin')
+                          ? 'text-indigo-600 border-b-2 border-indigo-600'
+                          : 'text-gray-700 hover:text-indigo-600'
+                      }`}
+                    >
+                      {user?.role === 'admin'
+                        ? 'Admin Dashboard'
+                        : 'Instructor Dashboard'}
+                    </Link>
+                  )}
+                {isAdmin &&
+                  (user?.role === 'admin' || user?.role === 'instructor') && (
+                    <Link
+                      href="/"
+                      className="px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600"
+                    >
+                      Back to Home
+                    </Link>
+                  )}
               </div>
             </div>
           </div>

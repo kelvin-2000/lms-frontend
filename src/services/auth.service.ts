@@ -38,7 +38,7 @@ export class AuthService {
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
-      const response = await fetch(`/api/login`, {
+      const response = await fetch(`${this.baseUrl}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Types
@@ -81,11 +81,17 @@ interface CourseDetails {
 
 export default function CourseDetailPage() {
   const { id } = useParams();
+  const router = useRouter();
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
   const [course, setCourse] = useState<CourseDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [currentVideo, setCurrentVideo] = useState<CourseVideo | null>(null);
+  const [enrolling, setEnrolling] = useState(false);
+  const [enrollmentSuccess, setEnrollmentSuccess] = useState(false);
+  const [enrollmentError, setEnrollmentError] = useState<string | null>(null);
+  const [enrollmentChecked, setEnrollmentChecked] = useState(false);
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -217,6 +223,53 @@ export default function CourseDetailPage() {
     }
   }, [id, user]);
 
+  // Add new useEffect to check enrollment status
+  useEffect(() => {
+    const checkEnrollmentStatus = async () => {
+      if (!user || user.role !== 'student' || enrollmentChecked) {
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/enrollment/check-status`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              course_id: id,
+              user_id: user.id,
+            }),
+          },
+        );
+
+        const data = await response.json();
+        console.log('data', data);
+        if (data.success && data.data && data.data.is_enrolled) {
+          setEnrollmentSuccess(true);
+        }
+      } catch (err) {
+        console.error('Error checking enrollment status:', err);
+        // Don't set error state - we just default to showing the enroll button
+      } finally {
+        setEnrollmentChecked(true);
+      }
+    };
+
+    checkEnrollmentStatus();
+  }, [id, user, enrollmentChecked]);
+
+  // Set the first video as current video when course data is loaded
+  useEffect(() => {
+    if (course?.videos && course.videos.length > 0 && !currentVideo) {
+      setCurrentVideo(course.videos[0]);
+    }
+  }, [course, currentVideo]);
+
   // Helper function to format duration from seconds
   const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
@@ -261,6 +314,52 @@ export default function CourseDetailPage() {
   // Fallback image for when thumbnailUrl is null
   const DEFAULT_THUMBNAIL = '/assets/courses/default-thumbnail.jpg';
   const DEFAULT_AVATAR = '/assets/default-avatar.jpg';
+
+  // Helper function to convert YouTube URL to embed URL
+  const getYouTubeEmbedUrl = (url: string) => {
+    // Regular YouTube URL formats:
+    // - https://www.youtube.com/watch?v=VIDEO_ID
+    // - https://youtu.be/VIDEO_ID
+    // - https://www.youtube.com/watch?v=VIDEO_ID&list=PLAYLIST_ID
+    // - https://youtu.be/VIDEO_ID?list=PLAYLIST_ID
+
+    // Extract the video ID
+    let videoId = '';
+
+    if (url.includes('youtube.com/watch')) {
+      // For format: https://www.youtube.com/watch?v=VIDEO_ID
+      const urlParams = new URLSearchParams(url.split('?')[1]);
+      videoId = urlParams.get('v') || '';
+    } else if (url.includes('youtu.be/')) {
+      // For format: https://youtu.be/VIDEO_ID
+      videoId = url.split('youtu.be/')[1];
+      // Remove any query parameters
+      if (videoId.includes('?')) {
+        videoId = videoId.split('?')[0];
+      }
+    }
+
+    // Check if there's a playlist parameter
+    let playlistId = '';
+    if (url.includes('list=')) {
+      const urlParts = url.split('list=');
+      if (urlParts.length > 1) {
+        playlistId = urlParts[1];
+        // Remove any additional parameters
+        if (playlistId.includes('&')) {
+          playlistId = playlistId.split('&')[0];
+        }
+      }
+    }
+
+    // Return the embed URL
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}${playlistId ? `?list=${playlistId}` : ''}`;
+    }
+
+    // Return the original URL if we couldn't parse it
+    return url;
+  };
 
   const renderTabContent = () => {
     if (!course) return null;
@@ -331,17 +430,23 @@ export default function CourseDetailPage() {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
               Course Curriculum
             </h2>
+            <div className="mb-4">
+              <p className="text-gray-500">
+                {course.videos?.length || 0} videos •{' '}
+                {formatDuration(course.duration)}
+              </p>
+            </div>
             <div className="bg-white rounded-lg shadow-sm p-6">
               {course.videos && course.videos.length > 0 ? (
                 <div className="space-y-4">
                   {course.videos.map((video) => (
                     <div
                       key={video.id}
-                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                      className={`flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors`}
                     >
                       <div className="flex items-center">
                         <svg
-                          className="w-6 h-6 text-indigo-600 mr-4"
+                          className="w-6 h-6 text-gray-400 mr-4"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -369,15 +474,26 @@ export default function CourseDetailPage() {
                           </p>
                         </div>
                       </div>
-                      {video.isFree ? (
-                        <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
-                          Free Preview
-                        </span>
-                      ) : (
-                        <span className="px-2 py-1 text-xs font-medium text-gray-800 bg-gray-100 rounded-full">
-                          Premium
-                        </span>
-                      )}
+                      <div className="flex items-center space-x-3">
+                        {/* {video.isFree ? (
+                          <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
+                            Free Preview
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 text-xs font-medium text-gray-800 bg-gray-100 rounded-full">
+                            Premium
+                          </span>
+                        )} */}
+                        <button
+                          disabled={!enrollmentSuccess}
+                          onClick={() => handleVideoSelect(video)}
+                          className={`px-3 py-1.5 text-sm ${enrollmentSuccess ? 'bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                        >
+                          {enrollmentSuccess
+                            ? 'Watch Video'
+                            : 'Enroll to Watch'}
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -546,6 +662,63 @@ export default function CourseDetailPage() {
     }
   };
 
+  // Add function to handle video selection
+  const handleVideoSelect = (video: CourseVideo) => {
+    if (id && video && video.id) {
+      // Navigate to the video page instead of playing inline
+      window.location.href = `/courses/${id}/video/${video.id}`;
+    }
+  };
+
+  // Modify enrollCourse function to update enrollmentChecked
+  const enrollCourse = async () => {
+    if (!user) {
+      router.push(
+        '/auth/login?redirect=' + encodeURIComponent(`/courses/${id}`),
+      );
+      return;
+    }
+
+    try {
+      setEnrolling(true);
+      setEnrollmentError(null);
+
+      const token = localStorage.getItem('token');
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/student/enroll`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            course_id: id,
+            user_id: user.id,
+            user_role: user.role,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setEnrollmentSuccess(true);
+        setEnrollmentChecked(true);
+        // Optional: You can update the UI to show enrolled status or redirect to the course content
+      } else {
+        setEnrollmentError(data.message || 'Failed to enroll in the course');
+      }
+    } catch (err) {
+      console.error('Error enrolling in course:', err);
+      setEnrollmentError(
+        'An error occurred while enrolling. Please try again later.',
+      );
+    } finally {
+      setEnrolling(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -645,7 +818,7 @@ export default function CourseDetailPage() {
                     />
                   </div>
                   <div>
-                    <p className="font-medium">
+                    <p className="font-medium text-white">
                       Instructor: {course.instructor.name}
                     </p>
                     <p className="text-sm text-indigo-100">
@@ -688,7 +861,7 @@ export default function CourseDetailPage() {
                       d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"
                     />
                   </svg>
-                  <span>{course.totalVideos} videos</span>
+                  <span>{course.videos?.length || 0} videos</span>
                 </div>
                 <div className="flex items-center">
                   <svg
@@ -732,48 +905,118 @@ export default function CourseDetailPage() {
               </div>
 
               <div className="flex flex-wrap gap-4">
-                <button className="px-6 py-3 bg-white text-indigo-600 font-medium rounded-lg hover:bg-indigo-50 transition-colors">
-                  Enroll Now{' '}
-                  {typeof course.price === 'string' &&
-                  parseFloat(course.price) === 0
-                    ? '(Free)'
-                    : `($${
-                        typeof course.price === 'number'
-                          ? course.price.toFixed(2)
-                          : parseFloat(course.price).toFixed(2)
-                      })`}
-                </button>
-                <button className="px-6 py-3 bg-transparent border-2 border-white text-white font-medium rounded-lg hover:bg-white/10 transition-colors">
-                  Add to Wishlist
-                </button>
+                {user && user.role === 'student' ? (
+                  <button
+                    onClick={enrollCourse}
+                    disabled={enrolling || enrollmentSuccess}
+                    className={`px-6 py-3 font-medium rounded-lg transition-colors ${
+                      enrollmentSuccess
+                        ? 'bg-green-500 text-white'
+                        : 'bg-white text-indigo-600 hover:bg-indigo-50'
+                    }`}
+                  >
+                    {enrolling ? (
+                      <span className="flex items-center">
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-current"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Enrolling...
+                      </span>
+                    ) : enrollmentSuccess ? (
+                      'Enrolled'
+                    ) : (
+                      `Enroll Now ${
+                        typeof course?.price === 'string' &&
+                        parseFloat(course.price) === 0
+                          ? '(Free)'
+                          : `($${
+                              typeof course?.price === 'number'
+                                ? course.price.toFixed(2)
+                                : course?.price
+                                  ? parseFloat(course.price).toFixed(2)
+                                  : '0.00'
+                            })`
+                      }`
+                    )}
+                  </button>
+                ) : !user ? (
+                  <Link
+                    href={`/auth/login?redirect=${encodeURIComponent(`/courses/${id}`)}`}
+                    className="px-6 py-3 bg-white text-indigo-600 font-medium rounded-lg hover:bg-indigo-50 transition-colors"
+                  >
+                    Login to Enroll
+                  </Link>
+                ) : null}
               </div>
+              {enrollmentError && (
+                <div className="mt-2 text-red-600 text-sm">
+                  {enrollmentError}
+                </div>
+              )}
             </div>
 
             <div className="hidden lg:block">
-              <div className="relative h-80 w-full rounded-lg overflow-hidden shadow-xl">
-                <Image
-                  src={course.thumbnailUrl || DEFAULT_THUMBNAIL}
-                  alt={course.title}
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                  <button className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-indigo-600 hover:bg-gray-100 transition-colors">
-                    <svg
-                      className="w-8 h-8"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
+              {currentVideo && currentVideo.videoUrl ? (
+                <div className="w-full rounded-lg overflow-hidden shadow-xl">
+                  <div className="relative pt-[56.25%]">
+                    {' '}
+                    {/* 16:9 Aspect Ratio */}
+                    <iframe
+                      className="absolute inset-0 w-full h-full"
+                      src={getYouTubeEmbedUrl(currentVideo.videoUrl)}
+                      title={currentVideo.title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                  <div className="bg-indigo-900 text-white py-2 px-4 text-sm font-medium">
+                    {currentVideo.title}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="relative h-80 w-full rounded-lg overflow-hidden shadow-xl">
+                  <Image
+                    src={course.thumbnailUrl || DEFAULT_THUMBNAIL}
+                    alt={course.title}
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                    <button className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-indigo-600 hover:bg-gray-100 transition-colors">
+                      <svg
+                        className="w-8 h-8"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -845,7 +1088,7 @@ export default function CourseDetailPage() {
           </div>
 
           {/* Right column - Course curriculum */}
-          <div>
+          {/* <div>
             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4">
                 Course Curriculum
@@ -925,7 +1168,7 @@ export default function CourseDetailPage() {
                   : 'Enroll in Course'}
               </button>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

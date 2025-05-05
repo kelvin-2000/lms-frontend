@@ -10,8 +10,8 @@ export function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/admin') &&
     !request.nextUrl.pathname.startsWith('/admin/login')
   ) {
-    // If no token or not admin, redirect to admin login
-    if (!token || userRole !== 'admin') {
+    // If no token or not admin/instructor, redirect to admin login
+    if (!token || (userRole !== 'admin' && userRole !== 'instructor')) {
       return NextResponse.redirect(
         new URL(
           '/admin/login?redirect=' + request.nextUrl.pathname,

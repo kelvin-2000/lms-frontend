@@ -108,7 +108,7 @@ const MentorshipCard = ({
             href={`/mentorship/${id}`}
             className="w-full block text-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
           >
-            {status === 'open' ? 'Apply Now' : 'View Details'}
+            View Details
           </Link>
         </div>
       </div>

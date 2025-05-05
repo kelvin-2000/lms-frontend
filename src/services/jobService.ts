@@ -184,16 +184,16 @@ export const getJobs = async (
   page: number = 1,
 ): Promise<PaginatedResponse<Job>> => {
   try {
-    const token = getAuthToken();
-    if (!token) {
-      throw new Error('Authentication required');
-    }
+    // const token = getAuthToken();
+    // if (!token) {
+    //   throw new Error('Authentication required');
+    // }
 
     const response = await fetch(
       `${API_BASE_URL}/job-opportunities/open?page=${page}`,
       {
         headers: {
-          Authorization: `Bearer ${token}`,
+          // Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       },
@@ -217,14 +217,14 @@ export const getJobs = async (
 };
 
 export const getJobById = async (jobId: string | number): Promise<Job> => {
-  const token = getAuthToken();
-  if (!token) {
-    throw new Error('Authentication required');
-  }
+  // const token = getAuthToken();
+  // if (!token) {
+  //   throw new Error('Authentication required');
+  // }
 
   const response = await fetch(`${API_BASE_URL}/job-opportunities/${jobId}`, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      // Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
   });

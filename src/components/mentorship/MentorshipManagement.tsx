@@ -173,7 +173,7 @@ const MentorshipManagement: React.FC<MentorshipManagementProps> = ({
             <div className="flex justify-between">
               <h3 className="text-xl font-semibold mb-2">{program.title}</h3>
               <span
-                className={`text-sm px-2 py-1 rounded-full ${
+                className={`text-sm px-2 py-1 rounded-full h-[30px] ${
                   program.status === 'open'
                     ? 'bg-green-100 text-green-800'
                     : 'bg-yellow-100 text-yellow-800'

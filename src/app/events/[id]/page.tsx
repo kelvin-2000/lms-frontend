@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isSameDay } from 'date-fns';
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,9 +39,12 @@ interface EventDetails {
   description: string;
   longDescription?: string;
   thumbnailUrl?: string;
+  thumbnail?: string;
   coverImage?: string;
-  date: string;
-  time: string;
+  date?: string;
+  time?: string;
+  start_date?: string;
+  end_date?: string;
   location: string;
   address?: string;
   isVirtual?: boolean;
@@ -57,6 +60,13 @@ interface EventDetails {
   speakers?: EventSpeaker[];
   schedule?: EventSession[];
   registrations?: EventRegistration[];
+  videos?: {
+    id: number;
+    title: string;
+    duration: number;
+    videoUrl: string;
+    isFree: boolean;
+  }[];
 }
 
 interface EventUser {
@@ -86,6 +96,12 @@ export default function EventDetailPage() {
   const [registrations, setRegistrations] = useState<EventRegistration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [registering, setRegistering] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [registrationError, setRegistrationError] = useState<string | null>(
+    null,
+  );
+  const [registrationChecked, setRegistrationChecked] = useState(false);
 
   useEffect(() => {
     const fetchEventData = async () => {
@@ -105,17 +121,35 @@ export default function EventDetailPage() {
           // Transform API response to match our interface
           setEvent({
             ...data.data,
+            // Handle date formatting for both API formats
+            date:
+              data.data.date ||
+              (data.data.start_date
+                ? new Date(data.data.start_date).toISOString().split('T')[0]
+                : ''),
+            // Format time display if using start_date/end_date
+            time:
+              data.data.time ||
+              (data.data.start_date && data.data.end_date
+                ? `${format(parseISO(data.data.start_date), 'h:mm a')} - ${format(parseISO(data.data.end_date), 'h:mm a')}`
+                : ''),
+            // Make sure these fields are available
+            start_date: data.data.start_date,
+            end_date: data.data.end_date,
             attendees: 0, // Will be updated when registrations are loaded
             // Convert registration_fee if it's a string to ensure it displays properly
             registration_fee:
               typeof data.data.registration_fee === 'string'
                 ? parseFloat(data.data.registration_fee)
                 : data.data.registration_fee,
+            // Ensure videos array is available
+            videos: data.data.videos || [],
           });
 
-          // Fetch registrations if user is authenticated
+          // Fetch additional data (registrations, videos) if user is authenticated
           if (user) {
             try {
+              // Fetch registrations
               const registrationsResponse = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/events/${id}/registrations`,
                 {
@@ -138,6 +172,47 @@ export default function EventDetailPage() {
                       attendees: registrationsData.data.length,
                     };
                   });
+
+                  // Check if user is already registered
+                  if (
+                    user &&
+                    registrationsData.data.some(
+                      (reg: any) => reg.user_id === user.id,
+                    )
+                  ) {
+                    setRegistrationSuccess(true);
+                  }
+                }
+              }
+
+              // If videos aren't included in the main response, fetch them separately
+              if (!data.data.videos) {
+                try {
+                  const videosResponse = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL}/events/${id}/videos`,
+                    {
+                      headers: {
+                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                      },
+                    },
+                  );
+
+                  if (videosResponse.ok) {
+                    const videosData = await videosResponse.json();
+                    if (videosData.success) {
+                      // Update event with videos data
+                      setEvent((prevEvent) => {
+                        if (!prevEvent) return null;
+                        return {
+                          ...prevEvent,
+                          videos: videosData.data,
+                        };
+                      });
+                    }
+                  }
+                } catch (err) {
+                  console.error('Error fetching event videos:', err);
+                  // We don't set the main error state here to allow the page to still render
                 }
               }
             } catch (err) {
@@ -163,20 +238,130 @@ export default function EventDetailPage() {
     }
   }, [id, user]);
 
-  // Format date and time for display
-  const formatDateAndTime = (dateStr: string, timeStr: string) => {
+  // Add new useEffect to check registration status explicitly
+  useEffect(() => {
+    const checkRegistrationStatus = async () => {
+      if (
+        !user ||
+        user.role !== 'student' ||
+        registrationChecked ||
+        registrationSuccess
+      ) {
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/event-registration/check-status`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              event_id: id,
+              user_id: user.id,
+            }),
+          },
+        );
+
+        const data = await response.json();
+
+        if (data.success && data.data && data.data.is_registered) {
+          setRegistrationSuccess(true);
+        }
+      } catch (err) {
+        console.error('Error checking registration status:', err);
+        // Don't set error state - we just default to showing the register button
+      } finally {
+        setRegistrationChecked(true);
+      }
+    };
+
+    checkRegistrationStatus();
+  }, [id, user, registrationChecked, registrationSuccess]);
+
+  // Update the formatDateAndTime function to provide separate date and time display for multi-day events
+  const formatDateAndTime = (
+    dateStr?: string,
+    timeStr?: string,
+    startDateStr?: string,
+    endDateStr?: string,
+  ) => {
     try {
-      // Parse the date (e.g., "2025-06-15")
-      const date = parseISO(dateStr);
+      // Handle ISO format dates (from API)
+      if (startDateStr && endDateStr) {
+        const startDate = parseISO(startDateStr);
+        const endDate = parseISO(endDateStr);
 
-      // Extract start and end time from format like "10:00 AM - 4:00 PM"
-      const [startTime, endTime] = timeStr.split(' - ');
+        // Format the date (June 10, 2025)
+        const formattedDate = format(startDate, 'MMMM d, yyyy');
 
+        // Format the start and end times (8:00 AM - 6:00 PM)
+        const startTime = format(startDate, 'h:mm a');
+        const endTime = format(endDate, 'h:mm a');
+
+        // Check if the event spans multiple days
+        const isMultiDay = !isSameDay(startDate, endDate);
+
+        let fullDisplay;
+        let dateDisplay;
+        let timeDisplay;
+
+        if (isMultiDay) {
+          // For multi-day events: "June 10 - June 13, 2025"
+          dateDisplay = `${format(startDate, 'MMMM d')} - ${format(endDate, 'MMMM d, yyyy')}`;
+          // Time display: "3:00 PM - 1:00 AM"
+          timeDisplay = `${startTime} - ${endTime}`;
+          // Full display with bullet separator
+          fullDisplay = `${dateDisplay} • ${timeDisplay}`;
+        } else {
+          // For single-day events: "June 10, 2025"
+          dateDisplay = formattedDate;
+          // Time display: "8:00 AM - 6:00 PM"
+          timeDisplay = `${startTime} - ${endTime}`;
+          // Full display with bullet separator
+          fullDisplay = `${dateDisplay} • ${timeDisplay}`;
+        }
+
+        return {
+          formattedDate: dateDisplay,
+          startTime,
+          endTime,
+          timeDisplay,
+          fullDisplay,
+          isMultiDay,
+        };
+      }
+
+      // Fallback to original format (for legacy data)
+      if (dateStr) {
+        // Parse the date (e.g., "2025-06-15")
+        const date = parseISO(dateStr);
+
+        // Extract start and end time from format like "10:00 AM - 4:00 PM"
+        const [startTime, endTime] = timeStr?.split(' - ') || ['', ''];
+
+        return {
+          formattedDate: format(date, 'MMMM d, yyyy'),
+          startTime,
+          endTime,
+          timeDisplay: timeStr || '',
+          fullDisplay: `${format(date, 'MMMM d, yyyy')} • ${timeStr || ''}`,
+          isMultiDay: false,
+        };
+      }
+
+      // If no valid date information provided
       return {
-        formattedDate: format(date, 'MMMM d, yyyy'),
-        startTime,
-        endTime,
-        fullDisplay: `${format(date, 'MMMM d, yyyy')} • ${timeStr}`,
+        formattedDate: '',
+        startTime: '',
+        endTime: '',
+        timeDisplay: '',
+        fullDisplay: 'Date and time not available',
+        isMultiDay: false,
       };
     } catch (error) {
       console.error('Error formatting date and time:', error);
@@ -184,14 +369,62 @@ export default function EventDetailPage() {
         formattedDate: dateStr || '',
         startTime: (timeStr && timeStr.split(' - ')[0]) || '',
         endTime: (timeStr && timeStr.split(' - ')[1]) || '',
+        timeDisplay: timeStr || '',
         fullDisplay: `${dateStr || ''} • ${timeStr || ''}`,
+        isMultiDay: false,
       };
     }
   };
 
   // Default thumbnail image when none is provided
-  const DEFAULT_THUMBNAIL = '/assets/events/default-event.jpg';
-  const DEFAULT_AVATAR = '/assets/default-avatar.jpg';
+  const DEFAULT_THUMBNAIL = '/assets/events/event.jpg';
+  const DEFAULT_AVATAR = '/assets/avatar.jpg';
+
+  // Helper function to convert YouTube URL to embed URL
+  const getYouTubeEmbedUrl = (url: string) => {
+    // Regular YouTube URL formats:
+    // - https://www.youtube.com/watch?v=VIDEO_ID
+    // - https://youtu.be/VIDEO_ID
+    // - https://www.youtube.com/watch?v=VIDEO_ID&list=PLAYLIST_ID
+    // - https://youtu.be/VIDEO_ID?list=PLAYLIST_ID
+
+    // Extract the video ID
+    let videoId = '';
+
+    if (url.includes('youtube.com/watch')) {
+      // For format: https://www.youtube.com/watch?v=VIDEO_ID
+      const urlParams = new URLSearchParams(url.split('?')[1]);
+      videoId = urlParams.get('v') || '';
+    } else if (url.includes('youtu.be/')) {
+      // For format: https://youtu.be/VIDEO_ID
+      videoId = url.split('youtu.be/')[1];
+      // Remove any query parameters
+      if (videoId.includes('?')) {
+        videoId = videoId.split('?')[0];
+      }
+    }
+
+    // Check if there's a playlist parameter
+    let playlistId = '';
+    if (url.includes('list=')) {
+      const urlParts = url.split('list=');
+      if (urlParts.length > 1) {
+        playlistId = urlParts[1];
+        // Remove any additional parameters
+        if (playlistId.includes('&')) {
+          playlistId = playlistId.split('&')[0];
+        }
+      }
+    }
+
+    // Return the embed URL
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}${playlistId ? `?list=${playlistId}` : ''}`;
+    }
+
+    // Return the original URL if we couldn't parse it
+    return url;
+  };
 
   const renderTabContent = () => {
     if (!event) return null;
@@ -230,7 +463,24 @@ export default function EventDetailPage() {
                   <div>
                     <p className="font-medium text-gray-900">Date & Time</p>
                     <p className="text-gray-600">
-                      {formatDateAndTime(event.date, event.time).fullDisplay}
+                      {
+                        formatDateAndTime(
+                          event.date,
+                          event.time,
+                          event.start_date,
+                          event.end_date,
+                        ).formattedDate
+                      }
+                    </p>
+                    <p className="text-gray-600">
+                      {
+                        formatDateAndTime(
+                          event.date,
+                          event.time,
+                          event.start_date,
+                          event.end_date,
+                        ).timeDisplay
+                      }
                     </p>
                   </div>
                 </div>
@@ -257,7 +507,7 @@ export default function EventDetailPage() {
                   </svg>
                   <div>
                     <p className="font-medium text-gray-900">Location</p>
-                    <p className="text-gray-600">{event.location}</p>
+                    <p className="text-gray-900">{event.location}</p>
                     {event.address && (
                       <p className="text-sm">{event.address}</p>
                     )}
@@ -328,7 +578,9 @@ export default function EventDetailPage() {
                   </svg>
                   <div>
                     <p className="font-medium text-gray-900">Organizer</p>
-                    <p className="text-gray-600">{event.organizer}</p>
+                    <p className="text-gray-600">
+                      {event.organizer || 'LMS Platform'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -391,8 +643,8 @@ export default function EventDetailPage() {
                           <div className="mt-4 flex items-center">
                             <div className="w-10 h-10 relative rounded-full overflow-hidden mr-3">
                               <Image
-                                src={session.speaker.avatar || DEFAULT_AVATAR}
-                                alt={session.speaker.name}
+                                src={session?.speaker?.avatar || DEFAULT_AVATAR}
+                                alt={session?.speaker?.name || ''}
                                 fill
                                 className="object-cover"
                               />
@@ -453,8 +705,8 @@ export default function EventDetailPage() {
                       <div className="flex items-start space-x-4">
                         <div className="w-24 h-24 relative rounded-xl overflow-hidden flex-shrink-0">
                           <Image
-                            src={speaker.avatar || DEFAULT_AVATAR}
-                            alt={speaker.name}
+                            src={speaker?.avatar || DEFAULT_AVATAR}
+                            alt={speaker?.name || ''}
                             fill
                             className="object-cover"
                           />
@@ -543,20 +795,68 @@ export default function EventDetailPage() {
                     {registrations.length}
                   </p>
                 </div>
-                <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-                  Register Now
-                </button>
+                {user &&
+                (user.role === 'student' || user.role === 'instructor') ? (
+                  <button
+                    onClick={registerForEvent}
+                    disabled={registering || registrationSuccess}
+                    className={`px-4 py-2 font-medium rounded-lg transition-colors ${
+                      registrationSuccess
+                        ? 'bg-green-500 text-white'
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                    }`}
+                  >
+                    {registering ? (
+                      <span className="flex items-center">
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Registering...
+                      </span>
+                    ) : registrationSuccess ? (
+                      'Registered'
+                    ) : (
+                      'Register Now'
+                    )}
+                  </button>
+                ) : (
+                  !user && (
+                    <Link
+                      href={`/auth/login?redirect=${encodeURIComponent(`/events/${id}`)}`}
+                      className="px-4 py-2 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                    >
+                      Login to Register
+                    </Link>
+                  )
+                )}
               </div>
             </div>
             <div className="bg-white rounded-lg shadow-sm p-6">
               {registrations.length > 0 ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
                   {registrations.map((registration) => (
                     <div key={registration.id} className="flex items-center">
                       <div className="w-12 h-12 relative rounded-full overflow-hidden mr-4">
                         <Image
-                          src={registration.user.avatar || DEFAULT_AVATAR}
-                          alt={registration.user.name}
+                          src={registration?.user?.avatar || DEFAULT_AVATAR}
+                          alt={registration?.user?.name || ''}
                           fill
                           className="object-cover"
                         />
@@ -596,6 +896,61 @@ export default function EventDetailPage() {
         );
       default:
         return null;
+    }
+  };
+
+  // Update registerForEvent function to set the checked flag
+  const registerForEvent = async () => {
+    if (!user) {
+      window.location.href = `/auth/login?redirect=${encodeURIComponent(`/events/${id}`)}`;
+      return;
+    }
+
+    try {
+      setRegistering(true);
+      setRegistrationError(null);
+
+      const token = localStorage.getItem('token');
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/events/${id}/register`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setRegistrationSuccess(true);
+        setRegistrationChecked(true);
+
+        // Update registrations list if data is returned
+        if (data.data) {
+          setRegistrations((prev) => [...prev, data.data]);
+
+          // Update attendees count
+          setEvent((prevEvent) => {
+            if (!prevEvent) return null;
+            return {
+              ...prevEvent,
+              attendees: prevEvent.attendees + 1,
+            };
+          });
+        }
+      } else {
+        setRegistrationError(
+          data.message || 'Failed to register for the event',
+        );
+      }
+    } catch (err) {
+      console.error('Error registering for event:', err);
+      setRegistrationError('An error occurred. Please try again later.');
+    } finally {
+      setRegistering(false);
     }
   };
 
@@ -671,8 +1026,25 @@ export default function EventDetailPage() {
                     </svg>
                     <div>
                       <h3 className="font-medium mb-1">Date & Time</h3>
-                      <p>
-                        {formatDateAndTime(event.date, event.time).fullDisplay}
+                      <p className="text-white">
+                        {
+                          formatDateAndTime(
+                            event.date,
+                            event.time,
+                            event.start_date,
+                            event.end_date,
+                          ).formattedDate
+                        }
+                      </p>
+                      <p className="text-white">
+                        {
+                          formatDateAndTime(
+                            event.date,
+                            event.time,
+                            event.start_date,
+                            event.end_date,
+                          ).timeDisplay
+                        }
                       </p>
                     </div>
                   </div>
@@ -700,7 +1072,7 @@ export default function EventDetailPage() {
                     </svg>
                     <div>
                       <h3 className="font-medium mb-1">Location</h3>
-                      <p>{event.location}</p>
+                      <p className="text-white">{event.location}</p>
                       {event.address && (
                         <p className="text-sm">{event.address}</p>
                       )}
@@ -727,16 +1099,18 @@ export default function EventDetailPage() {
                     </svg>
                     <div>
                       <h3 className="font-medium mb-1">Price</h3>
-                      <p>
+                      <p className="text-white">
                         {event.registration_fee === 0 ||
                         event.registration_fee === '0' ||
                         event.registration_fee === '0.00'
                           ? 'Free'
                           : `$${
                               typeof event.registration_fee === 'number'
-                                ? event.registration_fee.toFixed(2)
-                                : parseFloat(event.registration_fee).toFixed(2)
-                            }`}
+                                ? event?.registration_fee?.toFixed(2) || 'Free'
+                                : parseFloat(
+                                    event?.registration_fee || '0',
+                                  ).toFixed(2) || 'Free'
+                            }` || 'Free'}
                       </p>
                     </div>
                   </div>
@@ -756,11 +1130,63 @@ export default function EventDetailPage() {
                       ></div>
                     </div>
                   </div>
-
-                  <button className="px-6 py-2 bg-white text-indigo-600 font-medium rounded-lg hover:bg-indigo-50 transition-colors">
-                    Register Now
-                  </button>
+                  {user &&
+                  (user.role === 'student' || user.role === 'instructor') ? (
+                    <button
+                      onClick={registerForEvent}
+                      disabled={registering || registrationSuccess}
+                      className={`px-6 py-2 font-medium rounded-lg transition-colors ${
+                        registrationSuccess
+                          ? 'bg-green-500 text-white'
+                          : 'bg-white text-indigo-600 hover:bg-indigo-50'
+                      }`}
+                    >
+                      {registering ? (
+                        <span className="flex items-center">
+                          <svg
+                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
+                          </svg>
+                          Registering...
+                        </span>
+                      ) : registrationSuccess ? (
+                        'Registered'
+                      ) : (
+                        'Register Now'
+                      )}
+                    </button>
+                  ) : (
+                    !user && (
+                      <Link
+                        href="/auth/login"
+                        className="px-6 py-2 font-medium rounded-lg transition-colors bg-white text-indigo-600 hover:bg-indigo-50"
+                      >
+                        Login to Register
+                      </Link>
+                    )
+                  )}
                 </div>
+                {registrationError && (
+                  <div className="mt-2 text-white text-sm bg-red-500/20 p-2 rounded">
+                    {registrationError}
+                  </div>
+                )}
               </div>
 
               {registrations.length > 0 && (
@@ -772,8 +1198,8 @@ export default function EventDetailPage() {
                         className="w-8 h-8 rounded-full border-2 border-indigo-600 overflow-hidden bg-gray-200"
                       >
                         <Image
-                          src={registration.user.avatar || DEFAULT_AVATAR}
-                          alt={registration.user.name}
+                          src={registration?.user?.avatar || DEFAULT_AVATAR}
+                          alt={registration?.user?.name || ''}
                           width={32}
                           height={32}
                           className="object-cover"
@@ -822,15 +1248,39 @@ export default function EventDetailPage() {
             </div>
 
             <div className="lg:w-1/3">
-              <div className="rounded-lg overflow-hidden shadow-xl">
-                <Image
-                  src={event.thumbnailUrl || DEFAULT_THUMBNAIL}
-                  alt={event.title}
-                  width={400}
-                  height={225}
-                  className="w-full h-auto object-cover"
-                />
-              </div>
+              {event.videos &&
+              event.videos.length > 0 &&
+              event.videos[0].videoUrl ? (
+                <div className="rounded-lg overflow-hidden shadow-xl">
+                  <div className="relative pt-[56.25%]">
+                    {' '}
+                    {/* 16:9 Aspect Ratio */}
+                    <iframe
+                      className="absolute inset-0 w-full h-full"
+                      src={getYouTubeEmbedUrl(event.videos[0].videoUrl)}
+                      title={event.videos[0].title}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                  <div className="bg-indigo-900 text-white py-2 px-4 text-sm font-medium">
+                    {event.videos[0].title}
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-lg overflow-hidden shadow-xl">
+                  <Image
+                    src={
+                      event.thumbnailUrl || event.thumbnail || DEFAULT_THUMBNAIL
+                    }
+                    alt={event.title}
+                    width={400}
+                    height={225}
+                    className="w-full h-auto object-cover"
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -913,7 +1363,9 @@ export default function EventDetailPage() {
                       : `$${
                           typeof event.registration_fee === 'number'
                             ? event.registration_fee.toFixed(2)
-                            : parseFloat(event.registration_fee).toFixed(2)
+                            : parseFloat(event.registration_fee || '0').toFixed(
+                                2,
+                              )
                         }`}
                   </span>
                 </div>
@@ -921,14 +1373,28 @@ export default function EventDetailPage() {
                 <div className="flex justify-between">
                   <span className="text-gray-700">Date</span>
                   <span className="font-medium text-gray-900">
-                    {formatDateAndTime(event.date, event.time).formattedDate}
+                    {
+                      formatDateAndTime(
+                        event.date,
+                        event.time,
+                        event.start_date,
+                        event.end_date,
+                      ).formattedDate
+                    }
                   </span>
                 </div>
 
                 <div className="flex justify-between">
                   <span className="text-gray-700">Time</span>
                   <span className="font-medium text-gray-900">
-                    {event.time}
+                    {
+                      formatDateAndTime(
+                        event.date,
+                        event.time,
+                        event.start_date,
+                        event.end_date,
+                      ).timeDisplay
+                    }
                   </span>
                 </div>
 
@@ -948,9 +1414,61 @@ export default function EventDetailPage() {
               </div>
 
               <div className="pt-6 border-t border-gray-200">
-                <button className="w-full py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors mb-3">
-                  Register Now
-                </button>
+                {user && user.role === 'student' ? (
+                  <button
+                    onClick={registerForEvent}
+                    disabled={registering || registrationSuccess}
+                    className={`w-full py-3 font-medium rounded-lg transition-colors ${
+                      registrationSuccess
+                        ? 'bg-green-500 text-white'
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                    } mb-3`}
+                  >
+                    {registering ? (
+                      <span className="flex items-center justify-center">
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Registering...
+                      </span>
+                    ) : registrationSuccess ? (
+                      'Registered'
+                    ) : (
+                      'Register Now'
+                    )}
+                  </button>
+                ) : (
+                  !user && (
+                    <Link
+                      href={`/auth/login?redirect=${encodeURIComponent(`/events/${id}`)}`}
+                      className="w-full py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors mb-3 block text-center"
+                    >
+                      Login to Register
+                    </Link>
+                  )
+                )}
+                {registrationError && (
+                  <div className="mb-3 text-red-600 text-sm">
+                    {registrationError}
+                  </div>
+                )}
 
                 {event.isVirtual && (
                   <div className="text-sm text-gray-600 text-center">

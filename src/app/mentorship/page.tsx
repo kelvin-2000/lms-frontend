@@ -197,7 +197,7 @@ export default function MentorshipPage() {
         </div>
 
         {/* Become a Mentor CTA */}
-        <div className="mt-16 bg-indigo-600 rounded-lg shadow-lg p-8 text-center">
+        {/* <div className="mt-16 bg-indigo-600 rounded-lg shadow-lg p-8 text-center">
           <h2 className="text-2xl font-bold text-white mb-4">
             Want to Share Your Knowledge?
           </h2>
@@ -211,7 +211,7 @@ export default function MentorshipPage() {
           >
             Apply to Become a Mentor
           </a>
-        </div>
+        </div> */}
       </div>
     </div>
   );

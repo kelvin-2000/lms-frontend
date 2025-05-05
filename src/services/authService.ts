@@ -1,6 +1,6 @@
 export const adminLogin = async (email: string, password: string) => {
   try {
-    const response = await fetch(`/api/login`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

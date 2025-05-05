@@ -198,7 +198,7 @@ const JobManagement: React.FC<JobManagementProps> = ({
           <div key={job.id} className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between">
               <h3 className="text-xl font-semibold mb-2">{job.title}</h3>
-              <span className="text-sm px-2 py-1 bg-green-100 text-green-800 rounded-full">
+              <span className="text-sm px-2 py-1 bg-green-100 text-green-800 rounded-full h-[30px]">
                 {job.status}
               </span>
             </div>

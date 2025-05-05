@@ -26,8 +26,9 @@ export interface Event {
   longDescription: string;
   thumbnailUrl: string;
   coverImage: string;
-  startDate: string;
-  endDate: string;
+  status: string;
+  start_date: string;
+  end_date: string;
   location: string;
   address?: string;
   isVirtual: boolean;

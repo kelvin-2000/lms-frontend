@@ -45,9 +45,9 @@ interface ApiMentorshipProgram {
     achievements: string[] | null;
   };
   type: string;
-  duration_weeks: number;
+  duration: number;
   schedule: string | null;
-  max_mentees: number;
+  capacity: number;
   enrolled_mentees: number;
   price: number;
   benefits: string[] | null;
@@ -126,6 +126,10 @@ export default function MentorshipDetailPage() {
   const [applicationMessage, setApplicationMessage] = useState<string | null>(
     null,
   );
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
+  const [motivation, setMotivation] = useState('');
+  const [motivationError, setMotivationError] = useState<string | null>(null);
+  const [applicationChecked, setApplicationChecked] = useState(false);
 
   useEffect(() => {
     const fetchMentorshipData = async () => {
@@ -162,9 +166,9 @@ export default function MentorshipDetailPage() {
               apiProgram.description.substring(0, 150) + '...',
             description: apiProgram.long_description || apiProgram.description,
             type: (apiProgram.type as MentorshipType) || 'one-on-one',
-            duration: `${apiProgram.duration_weeks} weeks`,
+            duration: `${apiProgram.duration}`,
             schedule: apiProgram.schedule || 'Flexible schedule',
-            capacity: apiProgram.max_mentees,
+            capacity: apiProgram.capacity,
             enrolled: apiProgram.enrolled_mentees,
             price: apiProgram.price === 0 ? 'Free' : apiProgram.price,
             benefits: apiProgram.benefits || [
@@ -208,6 +212,54 @@ export default function MentorshipDetailPage() {
     }
   }, [id, user]);
 
+  // Add new useEffect to check application status
+  useEffect(() => {
+    const checkApplicationStatus = async () => {
+      if (
+        !user ||
+        !id ||
+        applicationStatus === 'success' ||
+        applicationChecked
+      ) {
+        return;
+      }
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/mentorship-application/check-status`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              program_id: id,
+              user_id: user.id,
+            }),
+          },
+        );
+
+        const data = await response.json();
+
+        if (data.success && data.data && data.data.has_applied) {
+          setApplicationStatus('success');
+          setApplicationMessage(
+            'You have already applied to this mentorship program.',
+          );
+        }
+      } catch (err) {
+        console.error('Error checking application status:', err);
+        // Don't set error state - we just default to showing the apply button
+      } finally {
+        setApplicationChecked(true);
+      }
+    };
+
+    checkApplicationStatus();
+  }, [id, user, applicationStatus, applicationChecked]);
+
   const formatPrice = (price: number | 'Free') => {
     if (price === 'Free') return 'Free';
     return `$${price}`;
@@ -238,10 +290,24 @@ export default function MentorshipDetailPage() {
       return;
     }
 
+    // Show the application modal instead of immediately submitting
+    setShowApplicationModal(true);
+  };
+
+  const submitApplication = async () => {
+    // Validate motivation field
+    if (!motivation.trim()) {
+      setMotivationError(
+        'Please provide your motivation for joining this mentorship program',
+      );
+      return;
+    }
+
     try {
       setApplying(true);
       setApplicationStatus('idle');
       setApplicationMessage(null);
+      setMotivationError(null);
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/mentorship-programs/${id}/apply`,
@@ -251,6 +317,9 @@ export default function MentorshipDetailPage() {
             'Content-Type': 'application/json',
             Authorization: `Bearer ${localStorage.getItem('token')}`,
           },
+          body: JSON.stringify({
+            motivation: motivation,
+          }),
         },
       );
 
@@ -261,12 +330,19 @@ export default function MentorshipDetailPage() {
         setApplicationMessage(
           'Your application has been submitted successfully! The mentor will review it soon.',
         );
+        setShowApplicationModal(false);
+        setApplicationChecked(true);
       } else {
-        setApplicationStatus('error');
-        setApplicationMessage(
-          data.message ||
-            'Failed to submit application. Please try again later.',
-        );
+        // Check for specific validation errors
+        if (data.errors && data.errors.motivation) {
+          setMotivationError(data.errors.motivation[0]);
+        } else {
+          setApplicationStatus('error');
+          setApplicationMessage(
+            data.message ||
+              'Failed to submit application. Please try again later.',
+          );
+        }
       }
     } catch (err) {
       console.error('Error applying for mentorship:', err);
@@ -309,6 +385,89 @@ export default function MentorshipDetailPage() {
 
   return (
     <div className="bg-gray-50">
+      {/* Application Modal */}
+      {showApplicationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              Apply for Mentorship Program
+            </h3>
+            <p className="text-gray-600 mb-4">
+              Tell us why you want to join this mentorship program and what you
+              hope to achieve.
+            </p>
+
+            <div className="mb-4">
+              <label
+                htmlFor="motivation"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Your Motivation <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                id="motivation"
+                rows={5}
+                className={`w-full px-3 py-2 border ${motivationError ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500`}
+                placeholder="Explain why you want to join this program and what you hope to learn..."
+                value={motivation}
+                onChange={(e) => setMotivation(e.target.value)}
+              ></textarea>
+              {motivationError && (
+                <p className="mt-1 text-sm text-red-600">{motivationError}</p>
+              )}
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setShowApplicationModal(false)}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={submitApplication}
+                disabled={applying}
+                className={`px-4 py-2 rounded-md shadow-sm text-white ${
+                  applying
+                    ? 'bg-indigo-400'
+                    : 'bg-indigo-600 hover:bg-indigo-700'
+                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+              >
+                {applying ? (
+                  <span className="flex items-center">
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Submitting...
+                  </span>
+                ) : (
+                  'Submit Application'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero section */}
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -407,29 +566,49 @@ export default function MentorshipDetailPage() {
 
               <div className="flex items-center mb-6">
                 <span className="text-2xl font-bold text-gray-900 mr-4">
-                  {formatPrice(mentorship.price)}
+                  {mentorship.price ? formatPrice(mentorship.price) : 'Free'}
                 </span>
                 <div className="text-sm text-gray-600 border-l border-gray-300 pl-4">
-                  <div>{mentorship.enrolled} enrolled</div>
+                  <div>{mentorship.enrolled || 0} enrolled</div>
                   <div>
-                    {mentorship.capacity - mentorship.enrolled} spots left
+                    {mentorship.capacity - (mentorship.enrolled || 0)} spots
+                    left
                   </div>
                 </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <button
-                  onClick={handleApplyForMentorship}
-                  disabled={applying}
-                  className={`px-6 py-3 font-medium rounded-lg transition-colors ${
-                    applying
-                      ? 'bg-indigo-400 text-white cursor-not-allowed'
-                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
-                  }`}
-                >
-                  {applying ? 'Applying...' : 'Apply for Mentorship'}
-                </button>
-                <button className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center">
+                {user &&
+                (user.role === 'student' || user.role === 'instructor') ? (
+                  applicationStatus === 'success' ? (
+                    <div className="px-6 py-3 font-medium rounded-lg bg-green-500 text-white">
+                      Application Submitted
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleApplyForMentorship}
+                      disabled={applying}
+                      className={`px-6 py-3 font-medium rounded-lg transition-colors ${
+                        applying
+                          ? 'bg-indigo-400 text-white cursor-not-allowed'
+                          : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                      }`}
+                    >
+                      {applying ? 'Applying...' : 'Apply for Mentorship'}
+                    </button>
+                  )
+                ) : (
+                  !user && (
+                    <Link
+                      href={`/auth/login?redirect=${encodeURIComponent(`/mentorship/${id}`)}`}
+                      className="px-6 py-3 font-medium rounded-lg transition-colors bg-indigo-600 text-white hover:bg-indigo-700"
+                    >
+                      Login to Apply
+                    </Link>
+                  )
+                )}
+
+                {/* <button className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center">
                   <svg
                     className="w-5 h-5 mr-2"
                     fill="none"
@@ -445,7 +624,7 @@ export default function MentorshipDetailPage() {
                     />
                   </svg>
                   Ask a Question
-                </button>
+                </button> */}
               </div>
 
               {applicationStatus !== 'idle' && (
@@ -545,16 +724,16 @@ export default function MentorshipDetailPage() {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Reviews</h2>
                 <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">
-                  {mentorship.reviews.reduce(
-                    (acc, review) => acc + review.rating,
+                  {mentorship?.reviews.reduce(
+                    (acc, review) => acc + (review?.rating || 0),
                     0,
-                  ) / mentorship.reviews.length}{' '}
+                  ) || 0 / (mentorship?.reviews.length || 0)}{' '}
                   / 5
                 </span>
               </div>
 
               <div className="space-y-6">
-                {mentorship.reviews.map((review) => (
+                {mentorship?.reviews.map((review) => (
                   <div
                     key={review.id}
                     className={`pb-6 ${review.id !== mentorship.reviews[mentorship.reviews.length - 1].id ? 'border-b border-gray-200' : ''}`}
@@ -663,19 +842,36 @@ export default function MentorshipDetailPage() {
             <p className="text-lg text-indigo-700 mb-8 max-w-3xl mx-auto">
               Apply now to join {mentorship.mentorName}&apos;s mentorship
               program and take your skills to the next level. Only{' '}
-              {mentorship.capacity - mentorship.enrolled} spots left!
+              {mentorship.capacity - (mentorship.enrolled || 0)} spots left!
             </p>
-            <button
-              onClick={handleApplyForMentorship}
-              disabled={applying}
-              className={`px-8 py-4 font-medium rounded-lg transition-colors text-lg ${
-                applying
-                  ? 'bg-indigo-400 text-white cursor-not-allowed'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-700'
-              }`}
-            >
-              {applying ? 'Applying...' : 'Apply for Mentorship'}
-            </button>
+            {user && (user.role === 'student' || user.role === 'instructor') ? (
+              applicationStatus === 'success' ? (
+                <div className="inline-block px-8 py-4 font-medium rounded-lg bg-green-500 text-white text-lg">
+                  Application Submitted
+                </div>
+              ) : (
+                <button
+                  onClick={handleApplyForMentorship}
+                  disabled={applying}
+                  className={`px-8 py-4 font-medium rounded-lg transition-colors text-lg ${
+                    applying
+                      ? 'bg-indigo-400 text-white cursor-not-allowed'
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  }`}
+                >
+                  {applying ? 'Applying...' : 'Apply for Mentorship'}
+                </button>
+              )
+            ) : (
+              !user && (
+                <Link
+                  href={`/auth/login?redirect=${encodeURIComponent(`/mentorship/${id}`)}`}
+                  className="inline-block px-8 py-4 font-medium rounded-lg transition-colors text-lg bg-indigo-600 text-white hover:bg-indigo-700"
+                >
+                  Login to Apply
+                </Link>
+              )
+            )}
           </div>
         </div>
       </div>

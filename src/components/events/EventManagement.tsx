@@ -38,8 +38,8 @@ const EventManagement: React.FC<EventManagementProps> = ({
     start_date: '',
     end_date: '',
     location: '',
-    thumbnail: '/assets/event.jpg',
-    max_participants: '100',
+    thumbnail: '',
+    capacity: '100',
     type: 'webinar',
     status: 'upcoming',
     registrationLink: '',
@@ -75,7 +75,7 @@ const EventManagement: React.FC<EventManagementProps> = ({
         start_date: formData.start_date,
         end_date: formData.end_date,
         location: formData.location,
-        max_participants: parseInt(formData.max_participants, 10),
+        capacity: parseInt(formData.capacity, 10),
         thumbnail: formData.thumbnail,
         type: formData.type,
         status: formData.status,
@@ -156,8 +156,8 @@ const EventManagement: React.FC<EventManagementProps> = ({
               start_date: '',
               end_date: '',
               location: '',
-              thumbnail: '/assets/event.jpg',
-              max_participants: '100',
+              thumbnail: '',
+              capacity: '100',
               type: 'webinar',
               status: 'upcoming',
               registrationLink: '',
@@ -193,8 +193,8 @@ const EventManagement: React.FC<EventManagementProps> = ({
                     start_date: formatDateForInput(event.start_date),
                     end_date: formatDateForInput(event.end_date),
                     location: event.location,
-                    thumbnail: event.thumbnailUrl || '/assets/event.jpg',
-                    max_participants: String(event.max_participants || 100),
+                    thumbnail: event.thumbnailUrl || '/assets/events/event.jpg',
+                    capacity: String(event.capacity || 100),
                     type: event.type || 'webinar',
                     status: event.status || 'upcoming',
                     registrationLink: '',
@@ -414,19 +414,19 @@ const EventManagement: React.FC<EventManagementProps> = ({
                   </label>
                   <input
                     type="number"
-                    name="max_participants"
-                    value={formData.max_participants}
+                    name="capacity"
+                    value={formData.capacity}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 ${
-                      validationErrors.max_participants
+                      validationErrors.capacity
                         ? 'border-red-500'
                         : 'border-gray-300'
                     }`}
                     min="1"
                   />
-                  {validationErrors.max_participants && (
+                  {validationErrors.capacity && (
                     <p className="mt-1 text-sm text-red-600">
-                      {validationErrors.max_participants[0]}
+                      {validationErrors.capacity[0]}
                     </p>
                   )}
                 </div>
