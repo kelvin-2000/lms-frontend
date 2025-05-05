@@ -1,5 +1,10 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Types
 type MentorExperience = {
@@ -18,6 +23,58 @@ type MentorEducation = {
 
 type MentorshipType = 'one-on-one' | 'group' | 'workshop' | 'career-coaching';
 
+// API Response Interface
+interface ApiMentorshipProgram {
+  id: number;
+  title: string;
+  description: string;
+  long_description: string | null;
+  overview: string | null;
+  mentor_id: number;
+  mentor: {
+    id: number;
+    name: string;
+    email: string;
+    avatar: string | null;
+    title: string | null;
+    company: string | null;
+    bio: string | null;
+    experience: MentorExperience[] | null;
+    education: MentorEducation[] | null;
+    skills: string[] | null;
+    achievements: string[] | null;
+  };
+  type: string;
+  duration_weeks: number;
+  schedule: string | null;
+  max_mentees: number;
+  enrolled_mentees: number;
+  price: number;
+  benefits: string[] | null;
+  curriculum:
+    | {
+        title: string;
+        items: string[];
+      }[]
+    | null;
+  reviews:
+    | {
+        id: number;
+        user: {
+          id: number;
+          name: string;
+          avatar: string | null;
+        };
+        created_at: string;
+        rating: number;
+        comment: string;
+      }[]
+    | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Frontend UI Model
 type MentorshipProgram = {
   id: string;
   title: string;
@@ -53,171 +110,103 @@ type MentorshipProgram = {
   }[];
 };
 
-// This is mock data that would normally come from an API call to the Laravel backend
-const mockMentorshipProgram: MentorshipProgram = {
-  id: '1',
-  title: 'Frontend Development Career Acceleration',
-  mentorName: 'Sarah Johnson',
-  mentorTitle: 'Senior Frontend Engineer',
-  mentorCompany: 'Google',
-  mentorAvatar: '/assets/mentors/avatar.jpg',
-  mentorBio:
-    "I'm a Senior Frontend Engineer at Google with over 10 years of experience in building complex web applications. I specialize in React, TypeScript, and modern JavaScript frameworks. I'm passionate about helping aspiring developers grow their skills and advance their careers.",
-  mentorExperience: [
-    {
-      company: 'Google',
-      role: 'Senior Frontend Engineer',
-      duration: '2019 - Present',
-      description:
-        'Leading the frontend development for Google Cloud Platform products.',
-    },
-    {
-      company: 'Facebook',
-      role: 'Frontend Engineer',
-      duration: '2016 - 2019',
-      description:
-        "Worked on React and contributed to Facebook's internal design system.",
-    },
-    {
-      company: 'Airbnb',
-      role: 'Frontend Developer',
-      duration: '2013 - 2016',
-      description:
-        "Helped build and maintain Airbnb's user interface and booking system.",
-    },
-  ],
-  mentorEducation: [
-    {
-      institution: 'Stanford University',
-      degree: "Master's",
-      field: 'Computer Science',
-      year: '2013',
-    },
-    {
-      institution: 'University of California, Berkeley',
-      degree: "Bachelor's",
-      field: 'Computer Science',
-      year: '2011',
-    },
-  ],
-  mentorSkills: [
-    'React',
-    'TypeScript',
-    'JavaScript',
-    'HTML/CSS',
-    'Redux',
-    'GraphQL',
-    'Next.js',
-    'Unit Testing',
-    'Performance Optimization',
-    'UI/UX Design',
-  ],
-  mentorAchievements: [
-    'Published author of "Modern Frontend Development" book',
-    'Speaker at React Conf 2022',
-    'Contributor to open-source React libraries',
-    'Tech blogger with 50,000+ followers',
-    "Winner of Google's internal developer award",
-  ],
-  overview:
-    'Accelerate your frontend development career with personalized mentorship from a Google Senior Frontend Engineer.',
-  description:
-    "This 12-week mentorship program is designed to help you master modern frontend development skills and advance your career. You'll receive personalized guidance, code reviews, career advice, and exclusive resources from a senior engineer with experience at top tech companies.\n\nWhether you're looking to break into tech, level up your skills, or prepare for senior roles, this program will provide you with the knowledge, feedback, and support you need to achieve your goals.",
-  type: 'one-on-one',
-  duration: '12 weeks',
-  schedule: 'Weekly 1-hour sessions + async communication',
-  capacity: 5,
-  enrolled: 3,
-  price: 499,
-  benefits: [
-    'Personalized learning path tailored to your goals',
-    'Weekly 1-on-1 video calls with your mentor',
-    'Unlimited text-based communication between sessions',
-    'Code reviews and feedback on your projects',
-    'Resume and portfolio review',
-    'Mock interviews and technical assessment preparation',
-    'Job search and career advancement strategies',
-    'Access to exclusive learning resources and exercises',
-    'Certificate of completion for your LinkedIn profile',
-    'Continued support after program completion',
-  ],
-  curriculum: [
-    {
-      title: 'Foundation Building (Weeks 1-3)',
-      items: [
-        'Assessment of your current skills and knowledge gaps',
-        'Development of a personalized learning plan',
-        'Setting up your development environment and workflow',
-        'Modern JavaScript fundamentals and best practices',
-        'Understanding React core concepts and patterns',
-      ],
-    },
-    {
-      title: 'Skill Development (Weeks 4-7)',
-      items: [
-        'Building complex React applications with hooks and context',
-        'State management strategies with Redux and alternatives',
-        'API integration and data fetching patterns',
-        'Performance optimization techniques',
-        'Testing strategies and implementation',
-        'TypeScript fundamentals and advanced types',
-      ],
-    },
-    {
-      title: 'Project Work (Weeks 8-10)',
-      items: [
-        'Building a portfolio project with mentor guidance',
-        'Code reviews and refactoring sessions',
-        'Implementing industry best practices',
-        'Debugging and troubleshooting techniques',
-        'Documentation and knowledge sharing',
-      ],
-    },
-    {
-      title: 'Career Development (Weeks 11-12)',
-      items: [
-        'Resume and LinkedIn profile optimization',
-        'Portfolio refinement and presentation',
-        'Interview preparation and mock technical interviews',
-        'Salary negotiation strategies',
-        'Long-term career planning and growth strategies',
-      ],
-    },
-  ],
-  reviews: [
-    {
-      id: 'r1',
-      name: 'Michael Smith',
-      avatar: '/assets/avatar.jpg',
-      date: '2023-10-15',
-      rating: 5,
-      comment:
-        "Sarah's mentorship completely transformed my frontend skills and helped me land my dream job. Her guidance on React patterns and best practices was invaluable, and she gave me excellent feedback on my portfolio projects. The mock interviews we did prepared me perfectly for the real thing!",
-    },
-    {
-      id: 'r2',
-      name: 'Jennifer Lee',
-      avatar: '/assets/avatar.jpg',
-      date: '2023-09-22',
-      rating: 5,
-      comment:
-        "I was stuck in my career until I joined Sarah's mentorship program. Her personalized approach helped me identify my strengths and weaknesses, and she created a learning plan that addressed exactly what I needed. The weekly calls kept me accountable, and her insights from working at Google were incredibly helpful.",
-    },
-    {
-      id: 'r3',
-      name: 'David Wilson',
-      avatar: '/assets/avatar.jpg',
-      date: '2023-08-30',
-      rating: 4,
-      comment:
-        "This mentorship program offers excellent value for the price. Sarah is knowledgeable, patient, and genuinely invested in your success. I especially appreciated the code reviews and feedback on my projects. The only reason I'm not giving 5 stars is that I wish the program was longer!",
-    },
-  ],
-};
+// Default avatar image
+const DEFAULT_AVATAR = '/assets/default-avatar.jpg';
 
 export default function MentorshipDetailPage() {
-  // In a real app, we would fetch the mentorship data using the ID from params
-  const mentorship = mockMentorshipProgram;
+  const { id } = useParams();
+  const { user } = useAuth();
+  const [mentorship, setMentorship] = useState<MentorshipProgram | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [applying, setApplying] = useState(false);
+  const [applicationStatus, setApplicationStatus] = useState<
+    'idle' | 'success' | 'error'
+  >('idle');
+  const [applicationMessage, setApplicationMessage] = useState<string | null>(
+    null,
+  );
+
+  useEffect(() => {
+    const fetchMentorshipData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/mentorship-programs/${id}`,
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch mentorship program data');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          const apiProgram: ApiMentorshipProgram = data.data;
+
+          // Transform API data to match our UI model
+          const transformedProgram: MentorshipProgram = {
+            id: apiProgram.id.toString(),
+            title: apiProgram.title,
+            mentorName: apiProgram.mentor.name,
+            mentorTitle: apiProgram.mentor.title || 'Mentor',
+            mentorCompany: apiProgram.mentor.company || 'Independent',
+            mentorAvatar: apiProgram.mentor.avatar || DEFAULT_AVATAR,
+            mentorBio: apiProgram.mentor.bio || 'No bio provided',
+            mentorExperience: apiProgram.mentor.experience || [],
+            mentorEducation: apiProgram.mentor.education || [],
+            mentorSkills: apiProgram.mentor.skills || [],
+            mentorAchievements: apiProgram.mentor.achievements || [],
+            overview:
+              apiProgram.overview ||
+              apiProgram.description.substring(0, 150) + '...',
+            description: apiProgram.long_description || apiProgram.description,
+            type: (apiProgram.type as MentorshipType) || 'one-on-one',
+            duration: `${apiProgram.duration_weeks} weeks`,
+            schedule: apiProgram.schedule || 'Flexible schedule',
+            capacity: apiProgram.max_mentees,
+            enrolled: apiProgram.enrolled_mentees,
+            price: apiProgram.price === 0 ? 'Free' : apiProgram.price,
+            benefits: apiProgram.benefits || [
+              'Learn from an experienced mentor',
+              'Practical, hands-on guidance',
+              'Career advice and development',
+            ],
+            curriculum: apiProgram.curriculum || [
+              {
+                title: 'Program Content',
+                items: ['Detailed curriculum will be available soon.'],
+              },
+            ],
+            reviews:
+              apiProgram.reviews?.map((review) => ({
+                id: review.id.toString(),
+                name: review.user.name,
+                avatar: review.user.avatar || DEFAULT_AVATAR,
+                date: new Date(review.created_at).toISOString().split('T')[0],
+                rating: review.rating,
+                comment: review.comment,
+              })) || [],
+          };
+
+          setMentorship(transformedProgram);
+        } else {
+          setError('Failed to load mentorship program details');
+        }
+      } catch (err) {
+        console.error('Error fetching mentorship program:', err);
+        setError(
+          'An error occurred while fetching the mentorship program. Please try again later.',
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchMentorshipData();
+    }
+  }, [id, user]);
 
   const formatPrice = (price: number | 'Free') => {
     if (price === 'Free') return 'Free';
@@ -241,6 +230,82 @@ export default function MentorshipDetailPage() {
       </div>
     );
   };
+
+  const handleApplyForMentorship = async () => {
+    if (!user) {
+      // Redirect to login if not authenticated
+      window.location.href = `/login?redirect=/mentorship/${id}`;
+      return;
+    }
+
+    try {
+      setApplying(true);
+      setApplicationStatus('idle');
+      setApplicationMessage(null);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/mentorship-programs/${id}/apply`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        },
+      );
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setApplicationStatus('success');
+        setApplicationMessage(
+          'Your application has been submitted successfully! The mentor will review it soon.',
+        );
+      } else {
+        setApplicationStatus('error');
+        setApplicationMessage(
+          data.message ||
+            'Failed to submit application. Please try again later.',
+        );
+      }
+    } catch (err) {
+      console.error('Error applying for mentorship:', err);
+      setApplicationStatus('error');
+      setApplicationMessage(
+        'An error occurred while submitting your application. Please try again later.',
+      );
+    } finally {
+      setApplying(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
+
+  if (error || !mentorship) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          {error || 'Mentorship program not found'}
+        </h2>
+        <p className="text-gray-600 mb-8">
+          We couldn&apos;t load the mentorship program details. Please try again
+          later.
+        </p>
+        <Link
+          href="/mentorship"
+          className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg"
+        >
+          Browse Mentorship Programs
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50">
@@ -353,8 +418,16 @@ export default function MentorshipDetailPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                  Apply for Mentorship
+                <button
+                  onClick={handleApplyForMentorship}
+                  disabled={applying}
+                  className={`px-6 py-3 font-medium rounded-lg transition-colors ${
+                    applying
+                      ? 'bg-indigo-400 text-white cursor-not-allowed'
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  }`}
+                >
+                  {applying ? 'Applying...' : 'Apply for Mentorship'}
                 </button>
                 <button className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center">
                   <svg
@@ -374,6 +447,18 @@ export default function MentorshipDetailPage() {
                   Ask a Question
                 </button>
               </div>
+
+              {applicationStatus !== 'idle' && (
+                <div
+                  className={`mt-4 px-4 py-3 rounded-md ${
+                    applicationStatus === 'success'
+                      ? 'bg-green-50 text-green-800 border border-green-200'
+                      : 'bg-red-50 text-red-800 border border-red-200'
+                  }`}
+                >
+                  {applicationMessage}
+                </div>
+              )}
             </div>
 
             <div className="rounded-lg overflow-hidden shadow-lg">
@@ -576,12 +661,20 @@ export default function MentorshipDetailPage() {
               Ready to Accelerate Your Career?
             </h2>
             <p className="text-lg text-indigo-700 mb-8 max-w-3xl mx-auto">
-              Apply now to join {mentorship.mentorName}&apos;s mentorship program and
-              take your skills to the next level. Only{' '}
+              Apply now to join {mentorship.mentorName}&apos;s mentorship
+              program and take your skills to the next level. Only{' '}
               {mentorship.capacity - mentorship.enrolled} spots left!
             </p>
-            <button className="px-8 py-4 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors text-lg">
-              Apply for Mentorship
+            <button
+              onClick={handleApplyForMentorship}
+              disabled={applying}
+              className={`px-8 py-4 font-medium rounded-lg transition-colors text-lg ${
+                applying
+                  ? 'bg-indigo-400 text-white cursor-not-allowed'
+                  : 'bg-indigo-600 text-white hover:bg-indigo-700'
+              }`}
+            >
+              {applying ? 'Applying...' : 'Apply for Mentorship'}
             </button>
           </div>
         </div>

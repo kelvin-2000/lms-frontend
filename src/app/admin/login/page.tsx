@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { adminLogin } from '@/services/authService';
+import { setAuthToken, setUserRole } from '@/utils/auth';
 
 export default function AdminLogin() {
   const router = useRouter();
@@ -20,15 +21,33 @@ export default function AdminLogin() {
 
     try {
       const response = await adminLogin(email, password);
+      console.log('Login response:', response);
 
-      // Set cookies for admin authentication
-      document.cookie = `token=${response.token}; path=/`;
-      document.cookie = `userRole=admin; path=/`;
+      // The API returns token in data.access_token
+      const token = response.data?.access_token;
+      const user = response.data?.user;
+
+      if (!token) {
+        console.error('No token received from server:', response);
+        setError('Login successful but no token received. Please try again.');
+        return;
+      }
+
+      // Use utility functions to store auth data consistently
+      setAuthToken(token);
+      setUserRole('admin');
+
+      if (user) {
+        localStorage.setItem('user', JSON.stringify(user));
+      } else {
+        console.warn('No user data received from server');
+      }
 
       // Redirect to admin dashboard or the requested page
       const redirectTo = searchParams.get('redirect') || '/admin';
       router.push(redirectTo);
     } catch (err) {
+      console.error('Login error:', err);
       setError('Invalid admin credentials');
     } finally {
       setLoading(false);

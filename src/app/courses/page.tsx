@@ -159,7 +159,7 @@ export default function CoursesPage() {
                   key={course.id}
                   {...course}
                   instructor={course.instructor.name}
-                  thumbnailUrl={course.thumbnail}
+                  thumbnailUrl={course.thumbnail || course.thumbnail_url}
                   level={course.level}
                   duration={`${Math.round(course.duration / 10080)} weeks`}
                 />

@@ -37,7 +37,7 @@ const CourseCard = ({
   };
   const formatUnderscoreText = (text: string) => {
     return text
-      .split('_')
+      ?.split('_')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join('_');
   };

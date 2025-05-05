@@ -5,10 +5,21 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import authService from '@/services/auth.service';
+import { usePathname } from 'next/navigation';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, clearAuth } = useAuth();
+  const pathname = usePathname();
+
+  const isAdmin = pathname.startsWith('/admin');
+
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return pathname === '/';
+    }
+    return pathname.startsWith(path);
+  };
 
   const handleLogout = async () => {
     try {
@@ -27,36 +38,75 @@ const Navbar = () => {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <Link href="/" className="text-2xl font-bold text-indigo-600">
-                LMS Platform
+              <Link
+                href={isAdmin ? '/admin' : '/'}
+                className="text-2xl font-bold text-indigo-600"
+              >
+                {isAdmin ? 'Admin Dashboard' : 'LMS Platform'}
               </Link>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:items-center">
               <div className="space-x-4">
                 <Link
-                  href="/courses"
-                  className="px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600"
+                  href={isAdmin ? '/admin/courses' : '/courses'}
+                  className={`px-3 py-2 rounded-md text-base font-medium ${
+                    isActive(isAdmin ? '/admin/courses' : '/courses')
+                      ? 'text-indigo-600 border-b-2 border-indigo-600'
+                      : 'text-gray-700 hover:text-indigo-600'
+                  }`}
                 >
                   Courses
                 </Link>
                 <Link
-                  href="/events"
-                  className="px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600"
+                  href={isAdmin ? '/admin/events' : '/events'}
+                  className={`px-3 py-2 rounded-md text-base font-medium ${
+                    isActive(isAdmin ? '/admin/events' : '/events')
+                      ? 'text-indigo-600 border-b-2 border-indigo-600'
+                      : 'text-gray-700 hover:text-indigo-600'
+                  }`}
                 >
                   Events
                 </Link>
                 <Link
-                  href="/jobs"
-                  className="px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600"
+                  href={isAdmin ? '/admin/jobs' : '/jobs'}
+                  className={`px-3 py-2 rounded-md text-base font-medium ${
+                    isActive(isAdmin ? '/admin/jobs' : '/jobs')
+                      ? 'text-indigo-600 border-b-2 border-indigo-600'
+                      : 'text-gray-700 hover:text-indigo-600'
+                  }`}
                 >
                   Jobs
                 </Link>
                 <Link
-                  href="/mentorship"
-                  className="px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600"
+                  href={isAdmin ? '/admin/mentorship' : '/mentorship'}
+                  className={`px-3 py-2 rounded-md text-base font-medium ${
+                    isActive(isAdmin ? '/admin/mentorship' : '/mentorship')
+                      ? 'text-indigo-600 border-b-2 border-indigo-600'
+                      : 'text-gray-700 hover:text-indigo-600'
+                  }`}
                 >
                   Mentorship
                 </Link>
+                {user && user.role === 'admin' && !isAdmin && (
+                  <Link
+                    href="/admin"
+                    className={`px-3 py-2 rounded-md text-base font-medium ${
+                      isActive('/admin')
+                        ? 'text-indigo-600 border-b-2 border-indigo-600'
+                        : 'text-gray-700 hover:text-indigo-600'
+                    }`}
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
+                {isAdmin && (
+                  <Link
+                    href="/"
+                    className="px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600"
+                  >
+                    Back to Home
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -160,29 +210,65 @@ const Navbar = () => {
         <div className="sm:hidden">
           <div className="pt-2 pb-3 space-y-1">
             <Link
-              href="/courses"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+              href={isAdmin ? '/admin/courses' : '/courses'}
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                isActive(isAdmin ? '/admin/courses' : '/courses')
+                  ? 'text-indigo-600 bg-indigo-50'
+                  : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+              }`}
             >
               Courses
             </Link>
             <Link
-              href="/events"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+              href={isAdmin ? '/admin/events' : '/events'}
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                isActive(isAdmin ? '/admin/events' : '/events')
+                  ? 'text-indigo-600 bg-indigo-50'
+                  : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+              }`}
             >
               Events
             </Link>
             <Link
-              href="/jobs"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+              href={isAdmin ? '/admin/jobs' : '/jobs'}
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                isActive(isAdmin ? '/admin/jobs' : '/jobs')
+                  ? 'text-indigo-600 bg-indigo-50'
+                  : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+              }`}
             >
               Jobs
             </Link>
             <Link
-              href="/mentorship"
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+              href={isAdmin ? '/admin/mentorship' : '/mentorship'}
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                isActive(isAdmin ? '/admin/mentorship' : '/mentorship')
+                  ? 'text-indigo-600 bg-indigo-50'
+                  : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+              }`}
             >
               Mentorship
             </Link>
+            {user && user.role === 'admin' && !isAdmin && (
+              <Link
+                href="/admin"
+                className={`block px-3 py-2 rounded-md text-base font-medium ${
+                  isActive('/admin')
+                    ? 'text-indigo-600 bg-indigo-50'
+                    : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50'
+                }`}
+              >
+                Admin
+              </Link>
+            )}
+            {isAdmin && (
+              <Link
+                href="/"
+                className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50"
+              >
+                Back to Site
+              </Link>
+            )}
           </div>
           <div className="pt-4 pb-3 border-t border-gray-200">
             {user ? (

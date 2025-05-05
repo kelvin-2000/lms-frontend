@@ -1,52 +1,77 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Types
 type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
 
 interface CourseVideo {
-  id: string;
+  id: number;
   title: string;
-  duration: string;
+  duration: number;
   videoUrl: string;
   isFree: boolean;
 }
 
 interface CourseInstructor {
-  id: string;
+  id: number;
   name: string;
-  avatar: string;
-  bio: string;
-  title: string;
+  avatar: string | null;
+  title: string | null;
+  bio: string | null;
 }
 
 interface CourseDiscussion {
-  id: string;
-  userId: string;
+  id: number;
+  userId: number;
   userName: string;
-  userAvatar: string;
+  userAvatar: string | null;
   title: string;
   content: string;
   date: string;
-  replies: number;
+  replies: number | null;
+}
+
+interface ApiDiscussion {
+  id: number;
+  user_id: number;
+  userName: string;
+  userAvatar: string | null;
+  title: string;
+  content: string;
+  date: string;
+  replies: number | null;
+  user?: {
+    name: string;
+    avatar: string | null;
+  };
+}
+
+interface ApiVideo {
+  id: number;
+  title: string;
+  duration: number;
+  videoUrl: string;
+  isFree: boolean;
 }
 
 interface CourseDetails {
-  id: string;
+  id: number;
   title: string;
   description: string;
   longDescription: string;
-  thumbnailUrl: string;
+  thumbnailUrl: string | null;
   level: CourseLevel;
-  duration: string;
+  duration: number;
   totalVideos: number;
-  price: number | 'Free';
+  price: number | string;
   rating: number;
   ratingCount: number;
   studentsCount: number;
-  lastUpdate: string;
+  lastUpdate: string | null;
   requirements: string[];
   whatYouWillLearn: string[];
   instructor: CourseInstructor;
@@ -54,112 +79,192 @@ interface CourseDetails {
   discussions: CourseDiscussion[];
 }
 
-// This is mock data that would normally come from an API call to the Laravel backend
-const mockCourseDetails: CourseDetails = {
-  id: '1',
-  title: 'Introduction to Web Development',
-  description:
-    'Learn the fundamentals of web development with HTML, CSS, and JavaScript.',
-  longDescription:
-    'This comprehensive course will guide you through the core technologies of web development. Starting with HTML and CSS, you will learn how to structure and style web pages. Then, you will dive into JavaScript to make your pages interactive. By the end of this course, you will have built several real-world projects and gained a solid foundation in web development.',
-  thumbnailUrl: '/assets/courses/web-dev.jpg',
-  level: 'beginner',
-  duration: '8 weeks',
-  totalVideos: 42,
-  price: 49.99,
-  rating: 4.7,
-  ratingCount: 1283,
-  studentsCount: 15420,
-  lastUpdate: 'November 2023',
-  requirements: [
-    'No prior programming experience needed',
-    'Basic computer skills',
-    'A computer with internet connection',
-    'Eagerness to learn and practice',
-  ],
-  whatYouWillLearn: [
-    'Build responsive websites with HTML, CSS, and JavaScript',
-    'Understand core web development concepts',
-    'Create interactive user interfaces',
-    'Implement basic form validation',
-    'Deploy websites to the internet',
-    'Work with popular development tools',
-  ],
-  instructor: {
-    id: '101',
-    name: 'John Doe',
-    avatar: '/assets/instructors/avatar.jpg',
-    title: 'Senior Web Developer at TechCorp',
-    bio: 'John has been working as a web developer for over 10 years and has helped thousands of students learn web development. He specializes in frontend technologies and loves making complex concepts easy to understand.',
-  },
-  videos: [
-    {
-      id: 'v1',
-      title: 'Introduction to the Course',
-      duration: '10:15',
-      videoUrl: '/assets/videos/intro.mp4',
-      isFree: true,
-    },
-    {
-      id: 'v2',
-      title: 'HTML Basics - Document Structure',
-      duration: '15:30',
-      videoUrl: '/assets/videos/html-basics.mp4',
-      isFree: true,
-    },
-    {
-      id: 'v3',
-      title: 'HTML Elements and Attributes',
-      duration: '20:45',
-      videoUrl: '/assets/videos/html-elements.mp4',
-      isFree: false,
-    },
-    {
-      id: 'v4',
-      title: 'Introduction to CSS',
-      duration: '18:20',
-      videoUrl: '/assets/videos/css-intro.mp4',
-      isFree: false,
-    },
-    {
-      id: 'v5',
-      title: 'CSS Selectors and Properties',
-      duration: '22:10',
-      videoUrl: '/assets/videos/css-selectors.mp4',
-      isFree: false,
-    },
-  ],
-  discussions: [
-    {
-      id: 'd1',
-      userId: 'u1',
-      userName: 'Sarah Johnson',
-      userAvatar: '/assets/mentors/avatar.jpg',
-      title: 'Question about CSS Flexbox',
-      content:
-        "I'm having trouble understanding how to center elements vertically with flexbox. Can someone please explain?",
-      date: '2 days ago',
-      replies: 3,
-    },
-    {
-      id: 'd2',
-      userId: 'u2',
-      userName: 'Michael Brown',
-      userAvatar: '/assets/mentors/avatar.jpg',
-      title: 'JavaScript Function Scope',
-      content:
-        "Can someone explain the difference between let, const, and var in JavaScript? I'm confused about scope.",
-      date: '1 week ago',
-      replies: 5,
-    },
-  ],
-};
-
 export default function CourseDetailPage() {
+  const { id } = useParams();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
-  const course = mockCourseDetails;
+  const [course, setCourse] = useState<CourseDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchCourseData = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/courses/${id}`,
+        );
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch course data');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Transform API response to match our interface
+          const courseData = {
+            ...data.data,
+            // Format duration from seconds to readable format
+            // Ensure we have dates in the right format
+            lastUpdate: data.data.lastUpdate
+              ? new Date(data.data.lastUpdate).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                })
+              : 'Recently updated',
+          };
+
+          // Additional API calls for videos and discussions if user is authenticated
+          let videos = data.data.videos || [];
+          let discussions = data.data.discussions || [];
+
+          if (user) {
+            try {
+              // Fetch videos if not included in the initial response
+              if (!videos.length) {
+                const videosResponse = await fetch(
+                  `${process.env.NEXT_PUBLIC_API_URL}/courses/${id}/videos`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                  },
+                );
+
+                if (videosResponse.ok) {
+                  const videosData = await videosResponse.json();
+                  if (videosData.success) {
+                    videos = videosData.data;
+                  }
+                }
+              }
+
+              // Fetch discussions if not included in the initial response
+              if (!discussions.length) {
+                const discussionsResponse = await fetch(
+                  `${process.env.NEXT_PUBLIC_API_URL}/courses/${id}/discussions`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${localStorage.getItem('token')}`,
+                    },
+                  },
+                );
+
+                if (discussionsResponse.ok) {
+                  const discussionsData = await discussionsResponse.json();
+                  if (discussionsData.success) {
+                    // Transform discussion data to match our interface
+                    discussions = discussionsData.data.map(
+                      (discussion: ApiDiscussion) => ({
+                        id: discussion.id,
+                        userId: discussion.user_id,
+                        userName: discussion.user?.name || discussion.userName,
+                        userAvatar:
+                          discussion.user?.avatar || discussion.userAvatar,
+                        title: discussion.title,
+                        content: discussion.content,
+                        date:
+                          discussion.date ||
+                          formatDate(new Date().toISOString()),
+                        replies: discussion.replies || 0,
+                      }),
+                    );
+                  }
+                }
+              }
+            } catch (err) {
+              console.error('Error fetching additional course data:', err);
+              // We don't set the main error state here to allow the page to still render
+            }
+          }
+
+          setCourse({
+            ...courseData,
+            videos: videos.map((video: ApiVideo) => ({
+              id: video.id,
+              title: video.title,
+              duration: video.duration,
+              videoUrl: video.videoUrl,
+              isFree: video.isFree,
+            })),
+            discussions: discussions.map((discussion: any) => ({
+              id: discussion.id,
+              userId: discussion.userId || discussion.user_id,
+              userName: discussion.userName,
+              userAvatar: discussion.userAvatar,
+              title: discussion.title,
+              content: discussion.content,
+              date: discussion.date,
+              replies: discussion.replies || 0,
+            })),
+          });
+        } else {
+          setError('Failed to load course details');
+        }
+      } catch (err) {
+        console.error('Error fetching course:', err);
+        setError(
+          'An error occurred while fetching the course. Please try again later.',
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchCourseData();
+    }
+  }, [id, user]);
+
+  // Helper function to format duration from seconds
+  const formatDuration = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    if (hours > 0) {
+      return `${hours} ${hours === 1 ? 'hour' : 'hours'} ${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
+    }
+    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
+  };
+
+  // Helper function to format date
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - date.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 1) {
+      return 'Yesterday';
+    } else if (diffDays < 7) {
+      return `${diffDays} days ago`;
+    } else if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+    } else {
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    }
+  };
+
+  // Format seconds to MM:SS for video duration
+  const formatVideoDuration = (seconds: number): string => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+  };
+
+  // Fallback image for when thumbnailUrl is null
+  const DEFAULT_THUMBNAIL = '/assets/courses/default-thumbnail.jpg';
+  const DEFAULT_AVATAR = '/assets/default-avatar.jpg';
 
   const renderTabContent = () => {
+    if (!course) return null;
+
     switch (activeTab) {
       case 'overview':
         return (
@@ -173,38 +278,50 @@ export default function CourseDetailPage() {
               <h3 className="text-xl font-bold text-gray-900 mb-4">
                 What You&apos;ll Learn
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {course.whatYouWillLearn.map((item, index) => (
-                  <div key={index} className="flex">
-                    <svg
-                      className="w-6 h-6 text-green-500 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    <p>{item}</p>
-                  </div>
-                ))}
-              </div>
+              {course.whatYouWillLearn && course.whatYouWillLearn.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {course.whatYouWillLearn.map((item, index) => (
+                    <div key={index} className="flex">
+                      <svg
+                        className="w-6 h-6 text-green-500 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                      <p>{item}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500">
+                  The instructor hasn&apos;t added learning objectives yet.
+                </p>
+              )}
             </div>
 
             <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
               <h3 className="text-xl font-bold text-gray-900 mb-4">
                 Requirements
               </h3>
-              <ul className="list-disc pl-5 space-y-2">
-                {course.requirements.map((item, index) => (
-                  <li key={index}>{item}</li>
-                ))}
-              </ul>
+              {course.requirements && course.requirements.length > 0 ? (
+                <ul className="list-disc pl-5 space-y-2">
+                  {course.requirements.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500">
+                  No specific requirements for this course.
+                </p>
+              )}
             </div>
           </div>
         );
@@ -215,54 +332,62 @@ export default function CourseDetailPage() {
               Course Curriculum
             </h2>
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="space-y-4">
-                {course.videos.map((video) => (
-                  <div
-                    key={video.id}
-                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
-                  >
-                    <div className="flex items-center">
-                      <svg
-                        className="w-6 h-6 text-indigo-600 mr-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      <div>
-                        <h3 className="font-medium text-gray-900">
-                          {video.title}
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          {video.duration}
-                        </p>
+              {course.videos && course.videos.length > 0 ? (
+                <div className="space-y-4">
+                  {course.videos.map((video) => (
+                    <div
+                      key={video.id}
+                      className="flex items-center justify-between p-4 border border-gray-200 rounded-lg"
+                    >
+                      <div className="flex items-center">
+                        <svg
+                          className="w-6 h-6 text-indigo-600 mr-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <div>
+                          <h3 className="font-medium text-gray-900">
+                            {video.title}
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            {formatVideoDuration(video.duration)}
+                          </p>
+                        </div>
                       </div>
+                      {video.isFree ? (
+                        <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
+                          Free Preview
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 text-xs font-medium text-gray-800 bg-gray-100 rounded-full">
+                          Premium
+                        </span>
+                      )}
                     </div>
-                    {video.isFree ? (
-                      <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
-                        Free Preview
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 text-xs font-medium text-gray-800 bg-gray-100 rounded-full">
-                        Premium
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">
+                    No videos have been added to this course yet.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         );
@@ -276,7 +401,7 @@ export default function CourseDetailPage() {
               <div className="flex items-start">
                 <div className="w-20 h-20 relative rounded-full overflow-hidden mr-4 flex-shrink-0">
                   <Image
-                    src={course.instructor.avatar}
+                    src={course.instructor.avatar || DEFAULT_AVATAR}
                     alt={course.instructor.name}
                     fill
                     className="object-cover"
@@ -286,10 +411,14 @@ export default function CourseDetailPage() {
                   <h3 className="text-lg font-medium text-gray-900">
                     {course.instructor.name}
                   </h3>
-                  <p className="text-gray-500 mb-2">
-                    {course.instructor.title}
-                  </p>
-                  <p className="text-gray-700">{course.instructor.bio}</p>
+                  {course.instructor.title && (
+                    <p className="text-gray-500 mb-2">
+                      {course.instructor.title}
+                    </p>
+                  )}
+                  {course.instructor.bio && (
+                    <p className="text-gray-700">{course.instructor.bio}</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -324,7 +453,11 @@ export default function CourseDetailPage() {
                   </p>
                 </div>
               </div>
-              {/* Add mock reviews here */}
+              <div className="text-center py-8">
+                <p className="text-gray-500">
+                  No reviews yet. Be the first to review this course!
+                </p>
+              </div>
             </div>
           </div>
         );
@@ -335,53 +468,76 @@ export default function CourseDetailPage() {
               Course Discussions
             </h2>
             <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="space-y-6">
-                {course.discussions.map((discussion) => (
-                  <div
-                    key={discussion.id}
-                    className="border-b border-gray-200 pb-6 last:border-b-0"
-                  >
-                    <div className="flex items-start">
-                      <div className="w-10 h-10 relative rounded-full overflow-hidden mr-4 flex-shrink-0">
-                        <Image
-                          src={discussion.userAvatar}
-                          alt={discussion.userName}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-gray-900">
-                          {discussion.title}
-                        </h3>
-                        <p className="text-sm text-gray-500 mb-2">
-                          {discussion.userName} • {discussion.date}
-                        </p>
-                        <p className="text-gray-700 mb-2">
-                          {discussion.content}
-                        </p>
-                        <div className="flex items-center text-sm text-gray-500">
-                          <svg
-                            className="w-4 h-4 mr-1"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth="2"
-                              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                            />
-                          </svg>
-                          {discussion.replies} replies
+              {course.discussions && course.discussions.length > 0 ? (
+                <div className="space-y-6">
+                  {course.discussions.map((discussion) => (
+                    <div
+                      key={discussion.id}
+                      className="border-b border-gray-200 pb-6 last:border-b-0"
+                    >
+                      <div className="flex items-start">
+                        <div className="w-10 h-10 relative rounded-full overflow-hidden mr-4 flex-shrink-0">
+                          <Image
+                            src={discussion.userAvatar || DEFAULT_AVATAR}
+                            alt={discussion.userName}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        <div>
+                          <h3 className="font-medium text-gray-900">
+                            {discussion.title}
+                          </h3>
+                          <p className="text-sm text-gray-500 mb-2">
+                            {discussion.userName} • {discussion.date}
+                          </p>
+                          <p className="text-gray-700 mb-2">
+                            {discussion.content}
+                          </p>
+                          <div className="flex items-center text-sm text-gray-500">
+                            <svg
+                              className="w-4 h-4 mr-1"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                              />
+                            </svg>
+                            {discussion.replies || 0} replies
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">
+                    No discussions yet. Start a new discussion!
+                  </p>
+                  {user ? (
+                    <button className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
+                      Start Discussion
+                    </button>
+                  ) : (
+                    <p className="mt-2 text-sm text-gray-500">
+                      <Link
+                        href="/auth/login"
+                        className="text-indigo-600 hover:underline"
+                      >
+                        Log in
+                      </Link>{' '}
+                      to participate in discussions
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         );
@@ -389,6 +545,33 @@ export default function CourseDetailPage() {
         return null;
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
+
+  if (error || !course) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16 text-center">
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          {error || 'Course not found'}
+        </h2>
+        <p className="text-gray-600 mb-8">
+          We couldn&apos;t load the course details. Please try again later.
+        </p>
+        <Link
+          href="/courses"
+          className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg"
+        >
+          Browse Courses
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50">
@@ -455,7 +638,7 @@ export default function CourseDetailPage() {
                 <div className="flex items-center mr-4">
                   <div className="w-10 h-10 relative rounded-full overflow-hidden mr-3">
                     <Image
-                      src={course.instructor.avatar}
+                      src={course.instructor.avatar || DEFAULT_AVATAR}
                       alt={course.instructor.name}
                       fill
                       className="object-cover"
@@ -466,7 +649,7 @@ export default function CourseDetailPage() {
                       Instructor: {course.instructor.name}
                     </p>
                     <p className="text-sm text-indigo-100">
-                      {course.instructor.title}
+                      {course.instructor.title || 'Instructor'}
                     </p>
                   </div>
                 </div>
@@ -488,7 +671,7 @@ export default function CourseDetailPage() {
                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                  <span>{course.duration}</span>
+                  <span>{formatDuration(course.duration)}</span>
                 </div>
                 <div className="flex items-center">
                   <svg
@@ -527,31 +710,38 @@ export default function CourseDetailPage() {
                       course.level.slice(1)}
                   </span>
                 </div>
-                <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <span>Last updated: {course.lastUpdate}</span>
-                </div>
+                {course.lastUpdate && (
+                  <div className="flex items-center">
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    <span>Last updated: {course.lastUpdate}</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-wrap gap-4">
                 <button className="px-6 py-3 bg-white text-indigo-600 font-medium rounded-lg hover:bg-indigo-50 transition-colors">
                   Enroll Now{' '}
-                  {course.price === 'Free'
+                  {typeof course.price === 'string' &&
+                  parseFloat(course.price) === 0
                     ? '(Free)'
-                    : `($${typeof course.price === 'number' ? course.price.toFixed(2) : course.price})`}
+                    : `($${
+                        typeof course.price === 'number'
+                          ? course.price.toFixed(2)
+                          : parseFloat(course.price).toFixed(2)
+                      })`}
                 </button>
                 <button className="px-6 py-3 bg-transparent border-2 border-white text-white font-medium rounded-lg hover:bg-white/10 transition-colors">
                   Add to Wishlist
@@ -562,7 +752,7 @@ export default function CourseDetailPage() {
             <div className="hidden lg:block">
               <div className="relative h-80 w-full rounded-lg overflow-hidden shadow-xl">
                 <Image
-                  src={course.thumbnailUrl}
+                  src={course.thumbnailUrl || DEFAULT_THUMBNAIL}
                   alt={course.title}
                   fill
                   className="object-cover"
@@ -662,63 +852,77 @@ export default function CourseDetailPage() {
               </h3>
               <div className="mb-4">
                 <p className="text-gray-500">
-                  {course.totalVideos} videos • {course.duration}
+                  {course.videos?.length || 0} videos •{' '}
+                  {formatDuration(course.duration)}
                 </p>
               </div>
 
-              <div className="space-y-4 mb-6">
-                {course.videos.map((video) => (
-                  <div
-                    key={video.id}
-                    className="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="mr-3 flex-shrink-0 mt-1">
-                      <svg
-                        className="w-5 h-5 text-indigo-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex justify-between">
-                        <h4 className="font-medium text-gray-900">
-                          {video.title}
-                        </h4>
-                        <span className="text-gray-500 text-sm">
-                          {video.duration}
-                        </span>
+              {course.videos && course.videos.length > 0 ? (
+                <div className="space-y-4 mb-6">
+                  {course.videos.slice(0, 5).map((video) => (
+                    <div
+                      key={video.id}
+                      className="flex items-start p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="mr-3 flex-shrink-0 mt-1">
+                        <svg
+                          className="w-5 h-5 text-indigo-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
                       </div>
-                      {video.isFree && (
-                        <span className="inline-block mt-1 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
-                          Free Preview
-                        </span>
-                      )}
+                      <div className="flex-1">
+                        <div className="flex justify-between">
+                          <h4 className="font-medium text-gray-900">
+                            {video.title}
+                          </h4>
+                          <span className="text-gray-500 text-sm">
+                            {formatVideoDuration(video.duration)}
+                          </span>
+                        </div>
+                        {video.isFree && (
+                          <span className="inline-block mt-1 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                            Free Preview
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 mb-6">
+                  <p className="text-gray-500">
+                    No videos have been added to this course yet.
+                  </p>
+                </div>
+              )}
 
-              <button className="w-full py-2 text-indigo-600 border border-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors mb-4">
-                Show All Content
-              </button>
+              {course.videos && course.videos.length > 5 && (
+                <button className="w-full py-2 text-indigo-600 border border-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors mb-4">
+                  Show All Content
+                </button>
+              )}
 
               <button className="w-full py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors">
-                Enroll in Course
+                {typeof course.price === 'string' &&
+                parseFloat(course.price) === 0
+                  ? 'Enroll for Free'
+                  : 'Enroll in Course'}
               </button>
             </div>
           </div>

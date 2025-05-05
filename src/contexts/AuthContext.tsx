@@ -1,5 +1,11 @@
 'use client';
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import {
+  getAuthToken,
+  setAuthToken,
+  setUserRole,
+  clearAuth as clearAuthUtils,
+} from '@/utils/auth';
 
 interface User {
   id: number;
@@ -27,9 +33,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check localStorage for existing auth data
+    // Check for existing auth data
     const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
+    const storedToken = getAuthToken();
 
     if (storedUser && storedToken) {
       setUser(JSON.parse(storedUser));
@@ -40,15 +46,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const setAuth = (userData: User, authToken: string) => {
     setUser(userData);
     setToken(authToken);
+
+    // Store user data in localStorage
     localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('token', authToken);
+
+    // Use utility functions to set token and role in both localStorage and cookies
+    setAuthToken(authToken);
+    setUserRole(userData.role);
   };
 
   const clearAuth = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+
+    // Use utility function to clear auth data
+    clearAuthUtils();
   };
 
   return (

@@ -95,8 +95,8 @@ export default function MentorshipPage() {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Match</h3>
               <p className="text-gray-600">
-                If selected, you&apos;ll be matched with your mentor and receive a
-                program schedule.
+                If selected, you&apos;ll be matched with your mentor and receive
+                a program schedule.
               </p>
             </div>
             <div className="text-center">
@@ -202,8 +202,8 @@ export default function MentorshipPage() {
             Want to Share Your Knowledge?
           </h2>
           <p className="text-indigo-100 mb-6 max-w-2xl mx-auto">
-            If you&apos;re an experienced professional looking to give back to the
-            community, consider becoming a mentor.
+            If you&apos;re an experienced professional looking to give back to
+            the community, consider becoming a mentor.
           </p>
           <a
             href="/mentorship/apply"

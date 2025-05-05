@@ -1,58 +1,223 @@
-import axios from 'axios';
-import { MentorshipProgram } from '@/types/mentorship';
+import { getAuthToken } from '@/utils/auth';
+import { MentorshipProgram, Mentor } from '@/types/mentorship';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
+
+export interface MentorshipProgramCreateData {
+  title: string;
+  description: string;
+  mentor_id: number;
+  duration: string;
+  capacity: number;
+  status: string;
+  category?: string;
+}
 
 export const createMentorshipProgram = async (
-  programData: Omit<MentorshipProgram, 'id'>,
+  programData: MentorshipProgramCreateData,
 ) => {
-  const response = await axios.post(
-    `${API_URL}/mentorship-programs`,
-    programData,
-    {
-      withCredentials: true,
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/mentorship-programs`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     },
-  );
-  return response.data;
+    body: JSON.stringify(programData),
+  });
+
+  const responseData = await response.json();
+
+  if (!response.ok) {
+    console.error(
+      'Mentorship program creation failed with status:',
+      response.status,
+      responseData,
+    );
+
+    if (response.status === 401) {
+      throw new Error('Authentication required');
+    }
+
+    // Check if it's a validation error with structured error messages
+    if (responseData.errors && typeof responseData.errors === 'object') {
+      // Format validation errors into a readable message
+      const errorMessages = Object.entries(responseData.errors)
+        .map(
+          ([field, messages]) =>
+            `${field}: ${(messages as string[]).join(', ')}`,
+        )
+        .join('; ');
+
+      throw new Error(`Validation error: ${errorMessages}`);
+    }
+
+    throw new Error(
+      `Failed to create mentorship program: ${responseData.message || 'Unknown error'}`,
+    );
+  }
+
+  return responseData;
 };
 
 export const updateMentorshipProgram = async (
-  programId: string,
-  programData: Partial<MentorshipProgram>,
+  programId: string | number,
+  programData: Partial<MentorshipProgramCreateData>,
 ) => {
-  const response = await axios.put(
-    `${API_URL}/mentorship-programs/${programId}`,
-    programData,
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/mentorship-programs/${programId}`,
     {
-      withCredentials: true,
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(programData),
     },
   );
-  return response.data;
+
+  const responseData = await response.json();
+
+  if (!response.ok) {
+    console.error(
+      'Mentorship program update failed with status:',
+      response.status,
+      responseData,
+    );
+
+    if (response.status === 401) {
+      throw new Error('Authentication required');
+    }
+
+    // Check if it's a validation error with structured error messages
+    if (responseData.errors && typeof responseData.errors === 'object') {
+      // Format validation errors into a readable message
+      const errorMessages = Object.entries(responseData.errors)
+        .map(
+          ([field, messages]) =>
+            `${field}: ${(messages as string[]).join(', ')}`,
+        )
+        .join('; ');
+
+      throw new Error(`Validation error: ${errorMessages}`);
+    }
+
+    throw new Error(
+      `Failed to update mentorship program: ${responseData.message || 'Unknown error'}`,
+    );
+  }
+
+  return responseData;
 };
 
-export const deleteMentorshipProgram = async (programId: string) => {
-  const response = await axios.delete(
-    `${API_URL}/mentorship-programs/${programId}`,
+export const deleteMentorshipProgram = async (programId: string | number) => {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/mentorship-programs/${programId}`,
     {
-      withCredentials: true,
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
     },
   );
-  return response.data;
+
+  if (!response.ok) {
+    throw new Error('Failed to delete mentorship program');
+  }
+
+  return await response.json();
 };
 
-export const getMentorshipPrograms = async () => {
-  const response = await axios.get(`${API_URL}/mentorship-programs`, {
-    withCredentials: true,
-  });
-  return response.data;
+export const getMentorshipPrograms = async (): Promise<MentorshipProgram[]> => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/mentorship-programs/open`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch mentorship programs');
+    }
+
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error('Error fetching mentorship programs:', error);
+    throw error;
+  }
 };
 
-export const getMentorshipProgramById = async (programId: string) => {
-  const response = await axios.get(
-    `${API_URL}/mentorship-programs/${programId}`,
+export const getMentorshipProgramById = async (
+  programId: string | number,
+): Promise<MentorshipProgram> => {
+  const token = getAuthToken();
+  if (!token) {
+    throw new Error('Authentication required');
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/mentorship-programs/${programId}`,
     {
-      withCredentials: true,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
     },
   );
-  return response.data;
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch mentorship program');
+  }
+
+  const data = await response.json();
+  return data.data;
+};
+
+export const getMentors = async (): Promise<Mentor[]> => {
+  try {
+    const token = getAuthToken();
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/mentors`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch mentors');
+    }
+
+    const data = await response.json();
+    return data.data || [];
+  } catch (error) {
+    console.error('Error fetching mentors:', error);
+    throw error;
+  }
 };
