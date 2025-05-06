@@ -1,30 +1,26 @@
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { format } from 'date-fns';
+import { Event } from '@/types/events';
 
-interface EventCardProps {
-  id: string;
-  title: string;
-  description: string;
+interface EventCardProps extends Omit<Event, 'thumbnail'> {
   thumbnailUrl: string;
-  startDate: Date;
-  endDate: Date;
-  location: string;
-  type: 'webinar' | 'workshop' | 'conference' | 'other';
+  type: string;
 }
 
 const EventCard = ({
-  id,
   title,
+  id,
   description,
-  thumbnailUrl,
-  startDate,
-  endDate,
+  start_date,
+  end_date,
   location,
+  thumbnailUrl,
   type,
 }: EventCardProps) => {
-  const formatDate = (date: Date) => {
-    return format(date, 'MMM dd, yyyy • h:mm a');
+  const formatDate = (date: string) => {
+    return format(new Date(date), 'MMM dd, yyyy • h:mm a');
   };
 
   const getEventTypeColor = (type: string) => {
@@ -45,10 +41,11 @@ const EventCard = ({
       <div className="relative h-48 w-full">
         <Image
           src={thumbnailUrl}
-          alt={title}
+          alt={`Event thumbnail for ${title}`}
           layout="fill"
           objectFit="cover"
           className="transition-transform duration-300 hover:scale-105"
+          aria-label={`${title} event thumbnail`}
         />
         <div className="absolute top-4 left-4">
           <span
@@ -59,8 +56,8 @@ const EventCard = ({
         </div>
       </div>
       <div className="p-5">
-        <Link href={`/events/${id}`}>
-          <h3 className="text-xl font-semibold mb-2 hover:text-indigo-600 transition-colors">
+        <Link href={`/events/${title}`}>
+          <h3 className="text-xl font-semibold mb-2 text-black hover:text-indigo-600 transition-colors">
             {title}
           </h3>
         </Link>
@@ -83,10 +80,10 @@ const EventCard = ({
               ></path>
             </svg>
             <div>
-              <p className="text-sm text-gray-700">{formatDate(startDate)}</p>
-              {endDate && (
+              <p className="text-sm text-gray-700">{formatDate(start_date)}</p>
+              {end_date && (
                 <p className="text-sm text-gray-700">
-                  to {formatDate(endDate)}
+                  to {formatDate(end_date)}
                 </p>
               )}
             </div>

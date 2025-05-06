@@ -1,8 +1,81 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import '@/styles/globals.css';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Check user data from localStorage on the client side
+    const checkUserData = () => {
+      try {
+        const userData = localStorage.getItem('user');
+        if (userData) {
+          setUser(JSON.parse(userData));
+        }
+      } catch (error) {
+        console.error('Error parsing user data from localStorage:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkUserData();
+  }, []);
+
+  // Show a minimal loading state or just render the page without user-specific elements
+  if (isLoading) {
+    return (
+      <div>
+        {/* Hero Section with loading state for user-specific elements */}
+        <section className="bg-gradient-to-r from-indigo-600 to-[#888CEF] text-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+              <div>
+                <h1 className="text-4xl md:text-5xl font-bold mb-6">
+                  Learn, Connect, and Grow Your Career
+                </h1>
+                <p className="text-xl mb-8 text-indigo-100">
+                  Your all-in-one platform for online courses, events, job
+                  opportunities, and mentorship programs.
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <Link
+                    href="/courses"
+                    className="px-5 pt-[10px] pb-2 text-lg bg-white text-indigo-600 font-medium rounded-lg hover:bg-indigo-50 transition-colors"
+                  >
+                    Explore Courses
+                  </Link>
+                  {/* Join Now button will be conditionally rendered after loading */}
+                </div>
+              </div>
+              <div className="hidden md:block">
+                <div className="relative h-full overflow-hidden w-full">
+                  <Image
+                    src="/assets/hero.png"
+                    alt="Learning platform hero"
+                    width={800}
+                    height={600}
+                    className="rounded-lg object-cover"
+                    priority
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Rest of the page without user-specific elements */}
+        {/* Features Section */}
+        {/* ... */}
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Hero Section */}
@@ -24,12 +97,14 @@ export default function Home() {
                 >
                   Explore Courses
                 </Link>
-                <Link
-                  href="/register"
-                  className="px-5 py-2 text-lg bg-transparent border-2 border-white text-white font-medium rounded-lg hover:bg-white/10 transition-colors"
-                >
-                  Join Now
-                </Link>
+                {!user && (
+                  <Link
+                    href="/auth/register"
+                    className="px-5 py-2 text-lg bg-transparent border-2 border-white text-white font-medium rounded-lg hover:bg-white/10 transition-colors"
+                  >
+                    Join Now
+                  </Link>
+                )}
               </div>
             </div>
             <div className="hidden md:block">
@@ -263,12 +338,21 @@ export default function Home() {
             Join thousands of learners who have transformed their careers
             through our platform.
           </p>
-          <Link
-            href="/register"
-            className="inline-block px-8 py-4 bg-white text-indigo-600 font-bold text-lg rounded-lg hover:bg-indigo-50 transition-colors"
-          >
-            Sign Up for Free
-          </Link>
+          {!user ? (
+            <Link
+              href="/auth/register"
+              className="inline-block px-8 py-4 bg-white text-indigo-600 font-bold text-lg rounded-lg hover:bg-indigo-50 transition-colors"
+            >
+              Sign Up for Free
+            </Link>
+          ) : (
+            <Link
+              href="/courses"
+              className="inline-block px-8 py-4 bg-white text-indigo-600 font-bold text-lg rounded-lg hover:bg-indigo-50 transition-colors"
+            >
+              Continue Learning
+            </Link>
+          )}
         </div>
       </section>
     </div>

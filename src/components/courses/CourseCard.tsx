@@ -1,19 +1,22 @@
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { Course } from '@/types/courses';
 
-interface CourseCardProps {
-  id: string;
-  title: string;
+interface CourseCardProps extends Omit<Course, 'instructor'> {
   instructor: string;
   thumbnailUrl: string;
-  level: 'beginner' | 'intermediate' | 'advanced';
+  level: string;
   duration: string;
-  price: number | 'Free';
+  price: string;
+  category: string;
+  id: string;
 }
 
 const CourseCard = ({
-  id,
   title,
+  id,
+  category,
   instructor,
   thumbnailUrl,
   level,
@@ -32,36 +35,47 @@ const CourseCard = ({
         return 'bg-gray-100 text-gray-800';
     }
   };
-
+  const formatUnderscoreText = (text: string) => {
+    return text
+      ?.split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join('_');
+  };
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1">
       <div className="relative h-48 w-full">
         <Image
           src={thumbnailUrl}
-          alt={title}
+          alt={`Course thumbnail for ${title}`}
           layout="fill"
           objectFit="cover"
           className="transition-transform duration-300 hover:scale-105"
+          aria-label={`${title} course thumbnail`}
         />
       </div>
       <div className="p-5">
         <div className="flex justify-between items-center mb-2">
-          <span
-            className={`text-xs font-semibold px-2 py-1 rounded-full ${getLevelColor(level)} capitalize`}
-          >
-            {level}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold px-2 py-1 rounded-full capitalize bg-yellow-100 text-gray-800">
+              {formatUnderscoreText(category)}
+            </span>
+            <span
+              className={`text-xs font-semibold px-2 py-1 rounded-full ${getLevelColor(level)} capitalize`}
+            >
+              {level}
+            </span>
+          </div>
           <span className="text-sm text-gray-500">{duration}</span>
         </div>
         <Link href={`/courses/${id}`}>
-          <h3 className="text-xl font-semibold mb-2 hover:text-indigo-600 transition-colors">
+          <h3 className="text-xl font-semibold mb-2 text-black hover:text-indigo-600 transition-colors">
             {title}
           </h3>
         </Link>
         <p className="text-gray-600 text-sm mb-4">By {instructor}</p>
         <div className="flex justify-between items-center">
-          <span className="font-bold text-lg">
-            {typeof price === 'number' ? `$${price.toFixed(2)}` : price}
+          <span className="font-bold text-lg text-black">
+            {price === '0.00' ? 'Free' : `$${price}`}
           </span>
           <Link
             href={`/courses/${id}`}

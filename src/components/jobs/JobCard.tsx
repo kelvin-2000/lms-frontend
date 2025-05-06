@@ -1,15 +1,10 @@
 import Link from 'next/link';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
+import { JobOpportunity } from '@/services/job.service';
 
-interface JobCardProps {
-  id: string;
-  title: string;
-  company: string;
-  location: string;
-  salary: string;
+interface JobCardProps extends JobOpportunity {
   jobType: 'full-time' | 'part-time' | 'contract' | 'internship';
-  deadline: Date;
-  postedDate: Date;
+  postedDate: string;
 }
 
 const JobCard = ({
@@ -17,7 +12,7 @@ const JobCard = ({
   title,
   company,
   location,
-  salary,
+  salary_range,
   jobType,
   deadline,
   postedDate,
@@ -35,6 +30,21 @@ const JobCard = ({
       default:
         return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return isValid(date) ? format(date, 'MMM dd, yyyy') : 'N/A';
+  };
+
+  const getDaysLeft = (deadlineString: string) => {
+    const deadlineDate = new Date(deadlineString);
+    if (!isValid(deadlineDate)) return 'N/A';
+
+    const daysLeft = Math.ceil(
+      (deadlineDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24),
+    );
+    return daysLeft > 0 ? `${daysLeft} days left to apply` : 'Deadline passed';
   };
 
   return (
@@ -94,24 +104,18 @@ const JobCard = ({
               d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             ></path>
           </svg>
-          <span className="text-gray-600 text-sm">{salary}</span>
+          <span className="text-gray-600 text-sm">{salary_range}</span>
         </div>
       </div>
 
       <div className="flex justify-between text-sm text-gray-500 mb-4">
-        <span>Posted: {format(postedDate, 'MMM dd, yyyy')}</span>
-        <span>Deadline: {format(deadline, 'MMM dd, yyyy')}</span>
+        <span>Posted: {formatDate(postedDate)}</span>
+        <span>Deadline: {formatDate(deadline)}</span>
       </div>
 
       <div className="flex justify-between items-center">
         <div className="flex items-center">
-          <span className="text-xs text-gray-500">
-            {Math.ceil(
-              (deadline.getTime() - new Date().getTime()) /
-                (1000 * 60 * 60 * 24),
-            )}{' '}
-            days left to apply
-          </span>
+          <span className="text-xs text-gray-500">{getDaysLeft(deadline)}</span>
         </div>
         <Link
           href={`/jobs/${id}`}
