@@ -466,11 +466,12 @@ const CoursesPage = () => {
                                               <div className="relative w-full h-full">
                                                 <Image
                                                   src={`https://img.youtube.com/vi/${getYouTubeVideoId(video.video_url)}/0.jpg`}
-                                                  alt={`Thumbnail for ${video.title}`}
+                                                  alt={`Video thumbnail for ${video.title}`}
                                                   fill
                                                   sizes="(max-width: 768px) 100vw, 300px"
                                                   className="object-cover"
                                                   unoptimized
+                                                  aria-label={`Video preview for "${video.title}"`}
                                                 />
                                               </div>
                                             ) : (

@@ -145,9 +145,10 @@ const Navbar = () => {
                       <Image
                         className="h-8 w-8 rounded-full"
                         src={user.avatar}
-                        alt={user.name}
+                        alt={`Profile picture of ${user.name}`}
                         width={32}
                         height={32}
+                        aria-label={`${user.name}'s profile`}
                       />
                     ) : (
                       <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
@@ -305,9 +306,10 @@ const Navbar = () => {
                       <Image
                         className="h-8 w-8 rounded-full"
                         src={user.avatar}
-                        alt={user.name}
+                        alt={`Profile picture of ${user.name}`}
                         width={32}
                         height={32}
+                        aria-label={`${user.name}'s profile`}
                       />
                     ) : (
                       <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">

@@ -644,9 +644,10 @@ export default function EventDetailPage() {
                             <div className="w-10 h-10 relative rounded-full overflow-hidden mr-3">
                               <Image
                                 src={session?.speaker?.avatar || DEFAULT_AVATAR}
-                                alt={session?.speaker?.name || ''}
+                                alt={`Profile picture of speaker ${session?.speaker?.name || 'Unknown'}`}
                                 fill
                                 className="object-cover"
+                                aria-label={`Speaker ${session?.speaker?.name || 'Unknown'}'s profile`}
                               />
                             </div>
                             <div>
@@ -706,9 +707,10 @@ export default function EventDetailPage() {
                         <div className="w-24 h-24 relative rounded-xl overflow-hidden flex-shrink-0">
                           <Image
                             src={speaker?.avatar || DEFAULT_AVATAR}
-                            alt={speaker?.name || ''}
+                            alt={`Profile picture of speaker ${speaker?.name || 'Unknown'}`}
                             fill
                             className="object-cover"
+                            aria-label={`Speaker ${speaker?.name || 'Unknown'}'s profile`}
                           />
                         </div>
                         <div className="flex-1 min-w-0">
@@ -856,9 +858,10 @@ export default function EventDetailPage() {
                       <div className="w-12 h-12 relative rounded-full overflow-hidden mr-4">
                         <Image
                           src={registration?.user?.avatar || DEFAULT_AVATAR}
-                          alt={registration?.user?.name || ''}
+                          alt={`Profile picture of attendee ${registration?.user?.name || 'Unknown'}`}
                           fill
                           className="object-cover"
+                          aria-label={`Profile picture of attendee ${registration?.user?.name || 'Unknown'}`}
                         />
                       </div>
                       <div>
@@ -1199,10 +1202,11 @@ export default function EventDetailPage() {
                       >
                         <Image
                           src={registration?.user?.avatar || DEFAULT_AVATAR}
-                          alt={registration?.user?.name || ''}
+                          alt={`Profile picture of attendee ${registration?.user?.name || 'Unknown'}`}
                           width={32}
                           height={32}
                           className="object-cover"
+                          aria-label={`Profile picture of attendee ${registration?.user?.name || 'Unknown'}`}
                         />
                       </div>
                     ))}
@@ -1274,10 +1278,11 @@ export default function EventDetailPage() {
                     src={
                       event.thumbnailUrl || event.thumbnail || DEFAULT_THUMBNAIL
                     }
-                    alt={event.title}
+                    alt={`Event thumbnail for ${event.title}`}
                     width={400}
                     height={225}
                     className="w-full h-auto object-cover"
+                    aria-label={`${event.title} event preview image`}
                   />
                 </div>
               )}

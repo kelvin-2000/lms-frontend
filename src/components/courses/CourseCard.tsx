@@ -46,10 +46,11 @@ const CourseCard = ({
       <div className="relative h-48 w-full">
         <Image
           src={thumbnailUrl}
-          alt={title}
+          alt={`Course thumbnail for ${title}`}
           layout="fill"
           objectFit="cover"
           className="transition-transform duration-300 hover:scale-105"
+          aria-label={`${title} course thumbnail`}
         />
       </div>
       <div className="p-5">

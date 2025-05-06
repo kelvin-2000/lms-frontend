@@ -518,9 +518,10 @@ export default function CourseDetailPage() {
                 <div className="w-20 h-20 relative rounded-full overflow-hidden mr-4 flex-shrink-0">
                   <Image
                     src={course.instructor.avatar || DEFAULT_AVATAR}
-                    alt={course.instructor.name}
+                    alt={`Profile picture of instructor ${course.instructor.name}`}
                     fill
                     className="object-cover"
+                    aria-label={`Instructor ${course.instructor.name}'s profile`}
                   />
                 </div>
                 <div>
@@ -595,9 +596,10 @@ export default function CourseDetailPage() {
                         <div className="w-10 h-10 relative rounded-full overflow-hidden mr-4 flex-shrink-0">
                           <Image
                             src={discussion.userAvatar || DEFAULT_AVATAR}
-                            alt={discussion.userName}
+                            alt={`Profile picture of ${discussion.userName}`}
                             fill
                             className="object-cover"
+                            aria-label={`${discussion.userName}'s profile`}
                           />
                         </div>
                         <div>
@@ -812,9 +814,10 @@ export default function CourseDetailPage() {
                   <div className="w-10 h-10 relative rounded-full overflow-hidden mr-3">
                     <Image
                       src={course.instructor.avatar || DEFAULT_AVATAR}
-                      alt={course.instructor.name}
+                      alt={`Profile picture of instructor ${course.instructor.name}`}
                       fill
                       className="object-cover"
+                      aria-label={`Instructor ${course.instructor.name}'s profile`}
                     />
                   </div>
                   <div>
@@ -995,9 +998,10 @@ export default function CourseDetailPage() {
                 <div className="relative h-80 w-full rounded-lg overflow-hidden shadow-xl">
                   <Image
                     src={course.thumbnailUrl || DEFAULT_THUMBNAIL}
-                    alt={course.title}
+                    alt={`Course thumbnail for ${course.title}`}
                     fill
                     className="object-cover"
+                    aria-label={`${course.title} course preview image`}
                   />
                   <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
                     <button className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-indigo-600 hover:bg-gray-100 transition-colors">

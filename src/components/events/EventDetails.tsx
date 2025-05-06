@@ -64,10 +64,11 @@ const EventDetails = ({ event }: EventDetailsProps) => {
                 <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
                   <Image
                     src={event.organizer.logo}
-                    alt={event.organizer.name}
+                    alt={`Logo of event organizer ${event.organizer.name}`}
                     width={48}
                     height={48}
                     className="object-cover"
+                    aria-label={`${event.organizer.name} logo`}
                   />
                 </div>
                 <div>
@@ -152,9 +153,10 @@ const EventDetails = ({ event }: EventDetailsProps) => {
             <div className="relative h-80 lg:h-full rounded-lg overflow-hidden shadow-lg">
               <Image
                 src={event.coverImage}
-                alt={event.title}
+                alt={`Cover image for event: ${event.title}`}
                 fill
                 className="object-cover"
+                aria-label={`${event.title} event cover`}
               />
             </div>
           </div>
@@ -191,10 +193,11 @@ const EventDetails = ({ event }: EventDetailsProps) => {
                       <div className="w-10 h-10 rounded-full overflow-hidden mr-4">
                         <Image
                           src={session.speaker.avatar}
-                          alt={session.speaker.name}
+                          alt={`Profile picture of speaker ${session.speaker.name}`}
                           width={40}
                           height={40}
                           className="object-cover"
+                          aria-label={`Speaker ${session.speaker.name}'s profile`}
                         />
                       </div>
                       <div>
@@ -233,10 +236,11 @@ const EventDetails = ({ event }: EventDetailsProps) => {
                     <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
                       <Image
                         src={speaker.avatar}
-                        alt={speaker.name}
+                        alt={`Profile picture of speaker ${speaker.name}`}
                         width={48}
                         height={48}
                         className="object-cover"
+                        aria-label={`Speaker ${speaker.name}'s profile`}
                       />
                     </div>
                     <div>
@@ -264,10 +268,11 @@ const EventDetails = ({ event }: EventDetailsProps) => {
                 <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
                   <Image
                     src={event.organizer.logo}
-                    alt={event.organizer.name}
+                    alt={`Logo of event organizer ${event.organizer.name}`}
                     width={48}
                     height={48}
                     className="object-cover"
+                    aria-label={`${event.organizer.name} logo`}
                   />
                 </div>
                 <div>

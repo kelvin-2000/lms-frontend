@@ -491,10 +491,11 @@ export default function MentorshipDetailPage() {
                 <div className="w-12 h-12 rounded-full overflow-hidden mr-4">
                   <Image
                     src={mentorship.mentorAvatar}
-                    alt={mentorship.mentorName}
+                    alt={`Profile picture of mentor ${mentorship.mentorName}`}
                     width={48}
                     height={48}
                     className="object-cover"
+                    aria-label={`Mentor ${mentorship.mentorName}'s profile`}
                   />
                 </div>
                 <div>
@@ -643,10 +644,11 @@ export default function MentorshipDetailPage() {
             <div className="rounded-lg overflow-hidden shadow-lg">
               <Image
                 src={mentorship.mentorAvatar}
-                alt={mentorship.mentorName}
+                alt={`Profile picture of mentor ${mentorship.mentorName}`}
                 width={600}
                 height={600}
                 className="object-cover w-full h-full"
+                aria-label={`Mentor ${mentorship.mentorName}'s profile`}
               />
             </div>
           </div>
@@ -742,10 +744,11 @@ export default function MentorshipDetailPage() {
                       <div className="w-10 h-10 rounded-full overflow-hidden mr-4">
                         <Image
                           src={review.avatar}
-                          alt={review.name}
+                          alt={`Profile picture of reviewer ${review.name}`}
                           width={40}
                           height={40}
                           className="object-cover"
+                          aria-label={`Reviewer ${review.name}'s profile`}
                         />
                       </div>
                       <div className="flex-1">

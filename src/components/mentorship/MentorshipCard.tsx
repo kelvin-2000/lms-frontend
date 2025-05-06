@@ -89,9 +89,10 @@ const MentorshipCard = ({
             <div className="relative h-12 w-12 rounded-full overflow-hidden mr-4">
               <Image
                 src={mentorAvatar}
-                alt={mentorName}
+                alt={`Profile picture of mentor ${mentorName}`}
                 layout="fill"
                 objectFit="cover"
+                aria-label={`Mentor ${mentorName}'s profile image`}
               />
             </div>
             <div>

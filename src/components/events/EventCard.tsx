@@ -41,10 +41,11 @@ const EventCard = ({
       <div className="relative h-48 w-full">
         <Image
           src={thumbnailUrl}
-          alt={title}
+          alt={`Event thumbnail for ${title}`}
           layout="fill"
           objectFit="cover"
           className="transition-transform duration-300 hover:scale-105"
+          aria-label={`${title} event thumbnail`}
         />
         <div className="absolute top-4 left-4">
           <span
