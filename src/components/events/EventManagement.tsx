@@ -13,6 +13,7 @@ const EVENT_TYPES = [
   { value: 'webinar', label: 'Webinar' },
   { value: 'workshop', label: 'Workshop' },
   { value: 'conference', label: 'Conference' },
+  { value: 'bootcamp', label: 'Bootcamp' },
   { value: 'other', label: 'Other' },
 ];
 
@@ -38,7 +39,7 @@ const EventManagement: React.FC<EventManagementProps> = ({
     start_date: '',
     end_date: '',
     location: '',
-    thumbnail: '',
+    thumbnail: '/assets/events/event.jpg',
     capacity: '100',
     type: 'webinar',
     status: 'upcoming',
@@ -156,7 +157,7 @@ const EventManagement: React.FC<EventManagementProps> = ({
               start_date: '',
               end_date: '',
               location: '',
-              thumbnail: '',
+              thumbnail: '/assets/events/event.jpg',
               capacity: '100',
               type: 'webinar',
               status: 'upcoming',

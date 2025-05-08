@@ -425,18 +425,23 @@ const MentorshipManagement: React.FC<MentorshipManagementProps> = ({
                   <label className="block text-sm font-medium text-gray-700">
                     Category
                   </label>
-                  <input
-                    type="text"
+                  <select
                     name="category"
-                    value={formData.category || ''}
+                    value={formData.category}
                     onChange={handleChange}
-                    placeholder="e.g. Web Development, Mobile, Design"
                     className={`mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 ${
                       validationErrors.category
                         ? 'border-red-500'
                         : 'border-gray-300'
                     }`}
-                  />
+                  >
+                    <option value="web">Web Development</option>
+                    <option value="mobile">Mobile Development</option>
+                    <option value="database">Database</option>
+                    <option value="design">UI/UX Design</option>
+                    <option value="career">Career Guidance</option>
+                    <option value="other">Other</option>
+                  </select>
                   {validationErrors.category && (
                     <p className="mt-1 text-sm text-red-600">
                       {validationErrors.category[0]}
