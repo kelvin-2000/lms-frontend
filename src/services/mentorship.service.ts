@@ -13,7 +13,7 @@ export interface MentorshipProgram {
   description: string;
   mentor_id: number;
   mentor?: Mentor;
-  max_mentees: number;
+  capacity: number;
   duration: number;
   requirements: string[];
   status: 'open' | 'closed' | 'completed';

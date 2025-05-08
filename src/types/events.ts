@@ -24,6 +24,7 @@ export interface Event {
   title: string;
   description: string;
   longDescription: string;
+  thumbnail?: string;
   thumbnailUrl: string;
   coverImage: string;
   status: string;

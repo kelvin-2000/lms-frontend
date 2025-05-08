@@ -144,6 +144,7 @@ export default function EventsPage() {
                 <option value="webinar">Webinars</option>
                 <option value="workshop">Workshops</option>
                 <option value="conference">Conferences</option>
+                <option value="bootcamp">Bootcamps</option>
                 <option value="other">Other</option>
               </select>
               <select
@@ -185,18 +186,29 @@ export default function EventsPage() {
 
         {/* Events Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {events.map((event) => (
-            <EventCard
-              key={event.id}
-              {...event}
-              thumbnailUrl={event.thumbnail}
-              type={event.type}
-            />
-          ))}
+          {events.length > 0 ? (
+            events.map((event) => (
+              <EventCard
+                key={event.id}
+                {...event}
+                thumbnailUrl={event?.thumbnail || event?.thumbnailUrl}
+                type={event.type}
+              />
+            ))
+          ) : (
+            <div className="col-span-1 md:col-span-2 lg:col-span-3 py-12 text-center">
+              <p className="text-lg text-gray-600">
+                No events found matching your criteria.
+              </p>
+              <p className="mt-2 text-md text-gray-500">
+                Try adjusting your filters or search terms.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Calendar View Toggle */}
-        <div className="mt-12 text-center">
+        <div className="mt-12 text-center hidden">
           <button className="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition-colors">
             Switch to Calendar View
           </button>

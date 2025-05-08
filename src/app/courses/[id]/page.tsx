@@ -92,6 +92,19 @@ export default function CourseDetailPage() {
   const [enrollmentSuccess, setEnrollmentSuccess] = useState(false);
   const [enrollmentError, setEnrollmentError] = useState<string | null>(null);
   const [enrollmentChecked, setEnrollmentChecked] = useState(false);
+  const [showEnrollmentAlert, setShowEnrollmentAlert] = useState(false);
+
+  useEffect(() => {
+    // Check URL parameters for enrollment_required error
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('error') === 'enrollment_required') {
+      setShowEnrollmentAlert(true);
+
+      // Remove the parameter from URL
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, newUrl);
+    }
+  }, []);
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -439,7 +452,7 @@ export default function CourseDetailPage() {
             <div className="bg-white rounded-lg shadow-sm p-6">
               {course.videos && course.videos.length > 0 ? (
                 <div className="space-y-4">
-                  {course.videos.map((video) => (
+                  {course.videos.map((video, index) => (
                     <div
                       key={video.id}
                       className={`flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors`}
@@ -475,21 +488,21 @@ export default function CourseDetailPage() {
                         </div>
                       </div>
                       <div className="flex items-center space-x-3">
-                        {/* {video.isFree ? (
+                        {index === 0 && (
                           <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
                             Free Preview
                           </span>
-                        ) : (
-                          <span className="px-2 py-1 text-xs font-medium text-gray-800 bg-gray-100 rounded-full">
-                            Premium
-                          </span>
-                        )} */}
+                        )}
                         <button
-                          disabled={!enrollmentSuccess}
                           onClick={() => handleVideoSelect(video)}
-                          className={`px-3 py-1.5 text-sm ${enrollmentSuccess ? 'bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                          disabled={!enrollmentSuccess && index > 0}
+                          className={`px-3 py-1.5 text-sm ${
+                            enrollmentSuccess || index === 0
+                              ? 'bg-indigo-600 text-white rounded hover:bg-indigo-700 transition-colors'
+                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          }`}
                         >
-                          {enrollmentSuccess
+                          {enrollmentSuccess || index === 0
                             ? 'Watch Video'
                             : 'Enroll to Watch'}
                         </button>
@@ -750,6 +763,35 @@ export default function CourseDetailPage() {
 
   return (
     <div className="bg-gray-50">
+      {/* Enrollment Required Alert */}
+      {showEnrollmentAlert && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 max-w-7xl mx-auto mt-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-yellow-400"
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">
+                Only the first video is available as a preview. Please enroll in
+                the course to access all content.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Hero section with course info */}
       <div className="bg-indigo-600 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -1142,7 +1184,7 @@ export default function CourseDetailPage() {
                             {formatVideoDuration(video.duration)}
                           </span>
                         </div>
-                        {video.isFree && (
+                        {index === 0 && (
                           <span className="inline-block mt-1 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
                             Free Preview
                           </span>

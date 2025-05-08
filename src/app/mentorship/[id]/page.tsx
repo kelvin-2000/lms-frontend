@@ -722,7 +722,7 @@ export default function MentorshipDetailPage() {
             </div>
 
             {/* Reviews */}
-            <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-8 hidden">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-gray-900">Reviews</h2>
                 <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">

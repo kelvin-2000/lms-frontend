@@ -4,7 +4,7 @@ const Footer = () => {
   return (
     <footer className="bg-gray-800 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <h3 className="text-lg font-semibold mb-4">LMS Platform</h3>
             <p className="text-gray-300">
@@ -44,13 +44,8 @@ const Footer = () => {
             </ul>
           </div>
           <div>
-            <h3 className="text-lg font-semibold mb-4">Support</h3>
+            <h3 className="text-lg font-semibold mb-4">Information</h3>
             <ul className="space-y-2">
-              <li>
-                <Link href="/faq" className="text-gray-300 hover:text-white">
-                  FAQ
-                </Link>
-              </li>
               <li>
                 <Link
                   href="/contact"
@@ -59,16 +54,6 @@ const Footer = () => {
                   Contact Us
                 </Link>
               </li>
-              <li>
-                <Link href="/help" className="text-gray-300 hover:text-white">
-                  Help Center
-                </Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Legal</h3>
-            <ul className="space-y-2">
               <li>
                 <Link href="/terms" className="text-gray-300 hover:text-white">
                   Terms of Service

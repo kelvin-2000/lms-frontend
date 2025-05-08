@@ -123,12 +123,12 @@ export default function MentorshipPage() {
                 className="px-4 py-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="">All Categories</option>
-                <option value="frontend">Frontend Development</option>
-                <option value="backend">Backend Development</option>
-                <option value="fullstack">Full-Stack Development</option>
+                <option value="web">Web Development</option>
                 <option value="mobile">Mobile Development</option>
+                <option value="database">Database</option>
                 <option value="design">UI/UX Design</option>
                 <option value="career">Career Guidance</option>
+                <option value="other">Other</option>
               </select>
               <select
                 name="status"
@@ -155,7 +155,7 @@ export default function MentorshipPage() {
             </div>
             <div className="relative">
               <input
-                type="text"
+                type="search"
                 name="search"
                 value={filters.search}
                 onChange={handleFilterChange}
@@ -182,18 +182,30 @@ export default function MentorshipPage() {
 
         {/* Mentorships Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {programs.map((program) => (
-            <MentorshipCard
-              key={program.id}
-              {...program}
-              mentorName={program.mentor?.name || 'Unknown Mentor'}
-              mentorAvatar={
-                program.mentor?.avatar || '/assets/default-avatar.png'
-              }
-              mentorTitle={program.mentor?.title || 'Mentor'}
-              status={program.status}
-            />
-          ))}
+          {programs.length > 0 ? (
+            programs.map((program) => (
+              <MentorshipCard
+                key={program.id}
+                {...program}
+                mentorName={program.mentor?.name || 'Unknown Mentor'}
+                mentorAvatar={
+                  program.mentor?.avatar || '/assets/default-avatar.png'
+                }
+                mentorTitle={program.mentor?.title || 'Mentor'}
+                status={program.status}
+                capacity={program.capacity}
+              />
+            ))
+          ) : (
+            <div className="col-span-1 md:col-span-2 lg:col-span-3 py-12 text-center">
+              <p className="text-lg text-gray-600">
+                No mentorship programs found matching your criteria.
+              </p>
+              <p className="mt-2 text-md text-gray-500">
+                Try adjusting your filters or search terms.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Become a Mentor CTA */}

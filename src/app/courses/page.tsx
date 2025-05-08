@@ -154,16 +154,29 @@ export default function CoursesPage() {
           <>
             {/* Courses Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {courses.map((course) => (
-                <CourseCard
-                  key={course.id}
-                  {...course}
-                  instructor={course.instructor.name}
-                  thumbnailUrl={course.thumbnail || course.thumbnail_url}
-                  level={course.level}
-                  duration={`${Math.round(course.duration / 10080)} weeks`}
-                />
-              ))}
+              {courses.length > 0 ? (
+                courses.map((course) => (
+                  <CourseCard
+                    key={course.id}
+                    {...course}
+                    instructor={course?.instructor?.name || ''}
+                    thumbnailUrl={
+                      course?.thumbnail || course?.thumbnail_url || ''
+                    }
+                    level={course.level}
+                    duration={`${Math.round((course?.duration || 0) / 10080)} weeks`}
+                  />
+                ))
+              ) : (
+                <div className="col-span-1 md:col-span-2 lg:col-span-3 py-12 text-center">
+                  <p className="text-lg text-gray-600">
+                    No courses found matching your criteria.
+                  </p>
+                  <p className="mt-2 text-md text-gray-500">
+                    Try adjusting your filters or search terms.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Pagination */}
