@@ -161,6 +161,7 @@ export const getPublicCourseBySlug = async (slug: string): Promise<Course> => {
 export const getCourses = async (
   page: number = 1,
   perPage: number = 10,
+  instructor_id?: number,
 ): Promise<PaginatedCourseResponse> => {
   const token = getAuthToken();
   console.log('Fetching courses with token:', token);
@@ -169,16 +170,22 @@ export const getCourses = async (
     console.error('Authentication required but no token found');
     throw new Error('Authentication required');
   }
+  
+  let url = '';
+  
+  // Use the dedicated instructor-specific endpoint for related courses if instructor_id is provided
+  if (instructor_id) {
+    url = `${API_BASE_URL}/instructors/${instructor_id}/related-courses?page=${page}&per_page=${perPage}`;
+  } else {
+    url = `${API_BASE_URL}/courses?page=${page}&per_page=${perPage}`;
+  }
 
-  const response = await fetch(
-    `${API_BASE_URL}/courses?page=${page}&per_page=${perPage}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
     },
-  );
+  });
 
   if (!response.ok) {
     console.error('Courses fetch failed with status:', response.status);
@@ -204,6 +211,18 @@ export const getCourses = async (
       per_page: perPage,
       last_page: 1,
     };
+
+    // Handle instructor related courses response format
+    if (instructor_id && responseData.success && responseData.data && responseData.data.courses) {
+      console.log(`Found ${responseData.data.courses.length} instructor related courses`);
+      return {
+        data: responseData.data.courses,
+        current_page: page,
+        total: responseData.data.courses.length,
+        per_page: perPage,
+        last_page: Math.ceil(responseData.data.courses.length / perPage),
+      };
+    }
 
     // Handle nested data structure (data.data.data) - Laravel paginated response format
     if (
