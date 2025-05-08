@@ -166,7 +166,7 @@ const Navbar = () => {
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="mt-0 rounded-md text-base font-medium text-[red]"
+                  className="mt-0 rounded-md text-base font-medium text-red-700"
                 >
                   Logout
                 </button>
@@ -327,7 +327,7 @@ const Navbar = () => {
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="mt-0 rounded-md text-base font-medium text-[red]"
+                  className="mt-0 rounded-md text-base font-medium text-red-700"
                 >
                   Logout
                 </button>
