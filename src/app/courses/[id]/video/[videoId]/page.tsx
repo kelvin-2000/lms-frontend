@@ -53,11 +53,54 @@ export default function CourseVideoPage() {
             videos: courseData.data.videos || [],
           });
 
+          // Check if user is enrolled
+          let isEnrolled = false;
+          if (user) {
+            try {
+              const token = localStorage.getItem('token');
+              const enrollmentResponse = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/enrollment/check-status`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                  },
+                  body: JSON.stringify({
+                    course_id: id,
+                    user_id: user.id,
+                  }),
+                },
+              );
+
+              const enrollmentData = await enrollmentResponse.json();
+              isEnrolled =
+                enrollmentData.success &&
+                enrollmentData.data &&
+                enrollmentData.data.is_enrolled;
+            } catch (err) {
+              console.error('Error checking enrollment:', err);
+              // Default to not enrolled if error
+            }
+          }
+
           // If the course response includes videos, find the current video
           if (courseData.data.videos && courseData.data.videos.length > 0) {
-            const currentVideo = courseData.data.videos.find(
+            const videos = courseData.data.videos;
+            const currentVideo = videos.find(
               (v: any) => v.id.toString() === videoId.toString(),
             );
+
+            const currentVideoIndex = videos.findIndex(
+              (v: any) => v.id.toString() === videoId.toString(),
+            );
+
+            // Only allow access to first video if not enrolled
+            if (!isEnrolled && currentVideoIndex > 0) {
+              // Redirect to course page with error
+              router.push(`/courses/${id}?error=enrollment_required`);
+              return;
+            }
 
             if (currentVideo) {
               setVideo(currentVideo);

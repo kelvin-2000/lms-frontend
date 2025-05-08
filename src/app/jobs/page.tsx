@@ -298,9 +298,18 @@ export default function JobsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {filteredJobs.map((job) => (
-                <JobCard key={job.id} job={job} />
-              ))}
+              {filteredJobs.length > 0 ? (
+                filteredJobs.map((job) => <JobCard key={job.id} job={job} />)
+              ) : (
+                <div className="col-span-1 md:col-span-2 lg:col-span-3 py-12 text-center">
+                  <p className="text-lg text-gray-600">
+                    No job opportunities found matching your criteria.
+                  </p>
+                  <p className="mt-2 text-md text-gray-500">
+                    Try adjusting your filters or search terms.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 

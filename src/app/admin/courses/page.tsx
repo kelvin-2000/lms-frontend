@@ -12,6 +12,7 @@ import {
   deleteCourseVideo,
 } from '@/services/courseService';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 // Helper function to extract YouTube video ID from URL
 const getYouTubeVideoId = (url: string): string | null => {
@@ -23,6 +24,7 @@ const getYouTubeVideoId = (url: string): string | null => {
 
 const CoursesPage = () => {
   const router = useRouter();
+  const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
@@ -49,7 +51,10 @@ const CoursesPage = () => {
     try {
       setLoading(true);
 
-      const response = await getCourses(page, perPage);
+      // For instructors, pass the instructor's ID to fetch only their related courses
+      const instructorId = user?.role === 'instructor' ? user.id : undefined;
+      
+      const response = await getCourses(page, perPage, instructorId);
       console.log('Courses response:', response);
 
       if (response && response.data) {
@@ -85,7 +90,7 @@ const CoursesPage = () => {
     // Only run this effect in the browser
     if (!isBrowser) return;
     fetchCourses(1);
-  }, [isBrowser, router]);
+  }, [isBrowser, router, user]);
 
   useEffect(() => {
     // Fetch course videos when a course is selected
@@ -285,7 +290,13 @@ const CoursesPage = () => {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold my-6 text-center">Manage Courses</h1>
+      <h1 className="text-3xl font-bold mt-6 mb-2 text-center">Manage Courses</h1>
+      
+      {user?.role === 'instructor' && (
+        <p className="text-center text-gray-600 mb-6">
+          Showing courses you are assigned to as an instructor
+        </p>
+      )}
 
       {error && (
         <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6">
@@ -453,7 +464,7 @@ const CoursesPage = () => {
                               {courseVideos.map((video) => (
                                 <tr key={video.id}>
                                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {video.order}
+                                    {video.position}
                                   </td>
                                   <td className="px-6 py-4">
                                     <div className="flex flex-col space-y-2">

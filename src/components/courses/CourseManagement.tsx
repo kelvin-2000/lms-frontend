@@ -35,7 +35,7 @@ const CourseManagement: React.FC<CourseManagementProps> = ({
     level: 'beginner',
     price: '0',
     status: 'draft',
-    thumbnail_url: '',
+    thumbnail_url: '/assets/courses/web.jpg',
     duration: '0',
   });
   const [validationErrors, setValidationErrors] = useState<
@@ -225,7 +225,7 @@ const CourseManagement: React.FC<CourseManagementProps> = ({
               level: 'beginner',
               price: '0',
               status: 'draft',
-              thumbnail_url: '',
+              thumbnail_url: '/assets/courses/web.jpg',
               duration: '0',
             });
             setIsModalOpen(true);
@@ -423,7 +423,22 @@ const CourseManagement: React.FC<CourseManagementProps> = ({
                   <label className="block text-sm font-medium text-gray-700">
                     Category
                   </label>
-                  <input
+                      <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    className={`mt-1 block w-full rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 ${
+                      validationErrors.level
+                        ? 'border-red-500'
+                        : 'border-gray-300'
+                    }`}
+                  >
+                    <option value="web_development">Web Development</option>
+                    <option value="mobile_development">Mobile Development</option>
+                    <option value="design">Design</option>
+                    <option value="database">Database</option>
+                  </select>
+                  {/* <input
                     type="text"
                     name="category"
                     value={formData.category}
@@ -434,7 +449,7 @@ const CourseManagement: React.FC<CourseManagementProps> = ({
                         : 'border-gray-300'
                     }`}
                     required
-                  />
+                  /> */}
                   {validationErrors.category && (
                     <p className="mt-1 text-sm text-red-600">
                       {validationErrors.category[0]}

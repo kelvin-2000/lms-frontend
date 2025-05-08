@@ -74,6 +74,11 @@ export default function CoursesPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    // Scroll to top of the course listing for better UX
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   return (
@@ -88,41 +93,67 @@ export default function CoursesPage() {
             advance your skills in various domains.
           </p>
         </div>
+        
         {/* Filters Section */}
-        <div className="bg-white p-4 rounded-lg shadow-sm mb-8">
+        <div 
+          className="bg-white p-4 rounded-lg shadow-sm mb-8" 
+          role="search" 
+          aria-label="Course filters"
+        >
           <div className="flex flex-wrap gap-4 items-center justify-between">
             <div className="flex flex-wrap gap-4">
-              <select
-                name="category"
-                value={filters.category}
-                onChange={handleFilterChange}
-                className="px-4 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">All Categories</option>
-                <option value="web_development">Web Development</option>
-                <option value="mobile_development">Mobile Development</option>
-                <option value="design">Design</option>
-                <option value="database">Database</option>
-              </select>
-              <select
-                name="level"
-                value={filters.level}
-                onChange={handleFilterChange}
-                className="px-4 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              >
-                <option value="">All Levels</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
+              <div>
+                <label htmlFor="category-filter" className="sr-only">
+                  Filter by category
+                </label>
+                <select
+                  id="category-filter"
+                  name="category"
+                  value={filters.category}
+                  onChange={handleFilterChange}
+                  className="px-4 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  aria-label="Filter courses by category"
+                >
+                  <option value="">All Categories</option>
+                  <option value="web_development">Web Development</option>
+                  <option value="mobile_development">Mobile Development</option>
+                  <option value="design">Design</option>
+                  <option value="database">Database</option>
+                </select>
+              </div>
+              
+              <div>
+                <label htmlFor="level-filter" className="sr-only">
+                  Filter by level
+                </label>
+                <select
+                  id="level-filter"
+                  name="level"
+                  value={filters.level}
+                  onChange={handleFilterChange}
+                  className="px-4 py-2 border border-gray-300 text-black rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  aria-label="Filter courses by difficulty level"
+                >
+                  <option value="">All Levels</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+              </div>
             </div>
+            
             <div className="relative">
+              <label htmlFor="course-search" className="sr-only">
+                Search courses
+              </label>
               <input
+                id="course-search"
                 type="search"
                 placeholder="Search by title or instructor name"
                 value={searchQuery}
                 onChange={handleSearch}
                 className="pl-10 pr-4 py-2 border text-black border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full sm:w-80"
+                aria-label="Search courses"
               />
               <svg
                 className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2"
@@ -130,6 +161,7 @@ export default function CoursesPage() {
                 stroke="currentColor"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -143,63 +175,101 @@ export default function CoursesPage() {
         </div>
 
         {loading ? (
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+          <div className="min-h-screen flex items-center justify-center" aria-live="polite">
+            <div 
+              className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"
+              role="status"
+              aria-label="Loading courses"
+            >
+              <span className="sr-only">Loading courses...</span>
+            </div>
           </div>
         ) : error ? (
-          <div className="min-h-screen flex items-center justify-center">
+          <div 
+            className="min-h-screen flex items-center justify-center" 
+            aria-live="assertive"
+          >
             <div className="text-red-600">Error: {error}</div>
           </div>
         ) : (
           <>
             {/* Courses Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {courses.map((course) => (
-                <CourseCard
-                  key={course.id}
-                  {...course}
-                  instructor={course.instructor.name}
-                  thumbnailUrl={course.thumbnail || course.thumbnail_url}
-                  level={course.level}
-                  duration={`${Math.round(course.duration / 10080)} weeks`}
-                />
-              ))}
+            <div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+              aria-label="Course listings"
+            >
+              {courses.length > 0 ? (
+                courses.map((course) => (
+                  <CourseCard
+                    key={course.id}
+                    {...course}
+                    instructor={course?.instructor?.name || ''}
+                    thumbnailUrl={
+                      course?.thumbnail || course?.thumbnail_url || ''
+                    }
+                    level={course.level}
+                    duration={`${Math.round((course?.duration || 0) / 10080)} weeks`}
+                    price={course.price?.toString() || "0"}
+                  />
+                ))
+              ) : (
+                <div 
+                  className="col-span-1 md:col-span-2 lg:col-span-3 py-12 text-center"
+                  aria-live="polite"
+                >
+                  <p className="text-lg text-gray-600">
+                    No courses found matching your criteria.
+                  </p>
+                  <p className="mt-2 text-md text-gray-500">
+                    Try adjusting your filters or search terms.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Pagination */}
-            <div className="mt-12 flex justify-center">
-              <nav className="inline-flex rounded-md shadow">
-                <button
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Previous
-                </button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                  (page) => (
-                    <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`px-4 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium ${
-                        currentPage === page
-                          ? 'text-indigo-600 hover:bg-gray-50'
-                          : 'text-gray-500 hover:bg-gray-50'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ),
-                )}
-                <button
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Next
-                </button>
+            {totalPages > 1 && (
+              <nav 
+                className="mt-12 flex justify-center" 
+                aria-label="Course pagination"
+              >
+                <div className="inline-flex rounded-md shadow">
+                  <button
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    aria-label="Go to previous page"
+                  >
+                    Previous
+                  </button>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                    (page) => (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-4 py-2 border-t border-b border-gray-300 bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                          currentPage === page
+                            ? 'text-indigo-600 hover:bg-gray-50 border-indigo-500 z-10'
+                            : 'text-gray-500 hover:bg-gray-50'
+                        }`}
+                        aria-label={`Go to page ${page}`}
+                        aria-current={currentPage === page ? 'page' : undefined}
+                      >
+                        {page}
+                      </button>
+                    ),
+                  )}
+                  <button
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    aria-label="Go to next page"
+                  >
+                    Next
+                  </button>
+                </div>
               </nav>
-            </div>
+            )}
           </>
         )}
       </div>

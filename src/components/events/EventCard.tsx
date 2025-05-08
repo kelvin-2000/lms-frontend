@@ -2,11 +2,17 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { format } from 'date-fns';
-import { Event } from '@/types/events';
+import { EventType } from '@/types/events';
 
-interface EventCardProps extends Omit<Event, 'thumbnail'> {
+interface EventCardProps {
+  id: string | number;
+  title: string;
+  description: string;
+  start_date: string;
+  end_date?: string;
+  location: string;
   thumbnailUrl: string;
-  type: string;
+  type: EventType | string;
 }
 
 const EventCard = ({
@@ -36,28 +42,44 @@ const EventCard = ({
     }
   };
 
+  const formattedStartDate = formatDate(start_date);
+  const formattedEndDate = end_date ? formatDate(end_date) : null;
+  const dateRangeText = end_date 
+    ? `${formattedStartDate} to ${formattedEndDate}`
+    : formattedStartDate;
+
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1">
+    <article 
+      className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1"
+      aria-labelledby={`event-${id}-title`}
+    >
       <div className="relative h-48 w-full">
         <Image
-          src={thumbnailUrl}
-          alt={`Event thumbnail for ${title}`}
-          layout="fill"
-          objectFit="cover"
-          className="transition-transform duration-300 hover:scale-105"
-          aria-label={`${title} event thumbnail`}
+          src={thumbnailUrl || '/assets/events/default.jpg'}
+          alt={`${title} event thumbnail`}
+          fill
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          className="transition-transform duration-300 hover:scale-105 object-cover"
         />
         <div className="absolute top-4 left-4">
           <span
             className={`text-xs font-semibold px-2 py-1 rounded-full ${getEventTypeColor(type)} capitalize`}
+            aria-label={`Event type: ${type}`}
           >
             {type}
           </span>
         </div>
       </div>
       <div className="p-5">
-        <Link href={`/events/${title}`}>
-          <h3 className="text-xl font-semibold mb-2 text-black hover:text-indigo-600 transition-colors">
+        <Link 
+          href={`/events/${id}`}
+          aria-labelledby={`event-${id}-title`}
+          className="focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-md"
+        >
+          <h3 
+            id={`event-${id}-title`}
+            className="text-xl font-semibold mb-2 text-black hover:text-indigo-600 transition-colors"
+          >
             {title}
           </h3>
         </Link>
@@ -71,6 +93,7 @@ const EventCard = ({
               stroke="currentColor"
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -80,12 +103,12 @@ const EventCard = ({
               ></path>
             </svg>
             <div>
-              <p className="text-sm text-gray-700">{formatDate(start_date)}</p>
-              {end_date && (
-                <p className="text-sm text-gray-700">
-                  to {formatDate(end_date)}
-                </p>
-              )}
+              <p className="text-sm text-gray-700" aria-label={`Event date: ${dateRangeText}`}>
+                {formattedStartDate}
+                {formattedEndDate && (
+                  <span> to {formattedEndDate}</span>
+                )}
+              </p>
             </div>
           </div>
           <div className="flex items-start">
@@ -95,6 +118,7 @@ const EventCard = ({
               stroke="currentColor"
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
@@ -109,20 +133,23 @@ const EventCard = ({
                 d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
               ></path>
             </svg>
-            <p className="text-sm text-gray-700">{location}</p>
+            <p className="text-sm text-gray-700" aria-label={`Event location: ${location}`}>
+              {location}
+            </p>
           </div>
         </div>
 
         <div className="flex justify-end">
           <Link
             href={`/events/${id}`}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
+            className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            aria-label={`View details for ${title} event`}
           >
             View Details
           </Link>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 
