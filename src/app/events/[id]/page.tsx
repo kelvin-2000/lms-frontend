@@ -866,10 +866,10 @@ export default function EventDetailPage() {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-900">
-                          {registration.user.name}
+                          {registration?.user?.name}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {registration.user.email}
+                          {registration?.user?.email}
                         </p>
                         <div className="flex items-center mt-1">
                           <span

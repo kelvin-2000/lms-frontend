@@ -423,7 +423,7 @@ const CourseManagement: React.FC<CourseManagementProps> = ({
                   <label className="block text-sm font-medium text-gray-700">
                     Category
                   </label>
-                      <select
+                  <select
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
@@ -434,7 +434,9 @@ const CourseManagement: React.FC<CourseManagementProps> = ({
                     }`}
                   >
                     <option value="web_development">Web Development</option>
-                    <option value="mobile_development">Mobile Development</option>
+                    <option value="mobile_development">
+                      Mobile Development
+                    </option>
                     <option value="design">Design</option>
                     <option value="database">Database</option>
                   </select>

@@ -1,5 +1,5 @@
 'use client';
-
+import '@/styles/globals.css';
 import React, { useEffect, useState } from 'react';
 import CourseCard from '@/components/courses/CourseCard';
 import { Course } from '@/types/courses';
@@ -77,7 +77,7 @@ export default function CoursesPage() {
     // Scroll to top of the course listing for better UX
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
+      behavior: 'smooth',
     });
   };
 
@@ -93,11 +93,11 @@ export default function CoursesPage() {
             advance your skills in various domains.
           </p>
         </div>
-        
+
         {/* Filters Section */}
-        <div 
-          className="bg-white p-4 rounded-lg shadow-sm mb-8" 
-          role="search" 
+        <div
+          className="bg-white p-4 rounded-lg shadow-sm mb-8"
+          role="search"
           aria-label="Course filters"
         >
           <div className="flex flex-wrap gap-4 items-center justify-between">
@@ -121,7 +121,7 @@ export default function CoursesPage() {
                   <option value="database">Database</option>
                 </select>
               </div>
-              
+
               <div>
                 <label htmlFor="level-filter" className="sr-only">
                   Filter by level
@@ -141,7 +141,7 @@ export default function CoursesPage() {
                 </select>
               </div>
             </div>
-            
+
             <div className="relative">
               <label htmlFor="course-search" className="sr-only">
                 Search courses
@@ -175,8 +175,11 @@ export default function CoursesPage() {
         </div>
 
         {loading ? (
-          <div className="min-h-screen flex items-center justify-center" aria-live="polite">
-            <div 
+          <div
+            className="min-h-screen flex items-center justify-center"
+            aria-live="polite"
+          >
+            <div
               className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"
               role="status"
               aria-label="Loading courses"
@@ -185,8 +188,8 @@ export default function CoursesPage() {
             </div>
           </div>
         ) : error ? (
-          <div 
-            className="min-h-screen flex items-center justify-center" 
+          <div
+            className="min-h-screen flex items-center justify-center"
             aria-live="assertive"
           >
             <div className="text-red-600">Error: {error}</div>
@@ -194,7 +197,7 @@ export default function CoursesPage() {
         ) : (
           <>
             {/* Courses Grid */}
-            <div 
+            <div
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
               aria-label="Course listings"
             >
@@ -209,11 +212,11 @@ export default function CoursesPage() {
                     }
                     level={course.level}
                     duration={`${Math.round((course?.duration || 0) / 10080)} weeks`}
-                    price={course.price?.toString() || "0"}
+                    price={course.price?.toString() || '0'}
                   />
                 ))
               ) : (
-                <div 
+                <div
                   className="col-span-1 md:col-span-2 lg:col-span-3 py-12 text-center"
                   aria-live="polite"
                 >
@@ -229,8 +232,8 @@ export default function CoursesPage() {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <nav 
-                className="mt-12 flex justify-center" 
+              <nav
+                className="mt-12 flex justify-center"
                 aria-label="Course pagination"
               >
                 <div className="inline-flex rounded-md shadow">

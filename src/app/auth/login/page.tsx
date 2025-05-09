@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { LoginCredentials } from '@/services/auth.service';
 import { useAuth } from '@/contexts/AuthContext';
 import authService from '@/services/auth.service';
+import '@/styles/globals.css';
 
 export default function LoginPage() {
   // const router = useRouter();

@@ -39,7 +39,7 @@ const EventManagement: React.FC<EventManagementProps> = ({
     start_date: '',
     end_date: '',
     location: '',
-    thumbnail: '/assets/events/event.jpg',
+    thumbnail: '',
     capacity: '100',
     type: 'webinar',
     status: 'upcoming',
@@ -194,7 +194,10 @@ const EventManagement: React.FC<EventManagementProps> = ({
                     start_date: formatDateForInput(event.start_date),
                     end_date: formatDateForInput(event.end_date),
                     location: event.location,
-                    thumbnail: event.thumbnailUrl || '/assets/events/event.jpg',
+                    thumbnail:
+                      event.thumbnailUrl ||
+                      event.thumbnail ||
+                      '/assets/events/event.jpg',
                     capacity: String(event.capacity || 100),
                     type: event.type || 'webinar',
                     status: event.status || 'upcoming',

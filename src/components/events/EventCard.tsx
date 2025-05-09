@@ -44,12 +44,12 @@ const EventCard = ({
 
   const formattedStartDate = formatDate(start_date);
   const formattedEndDate = end_date ? formatDate(end_date) : null;
-  const dateRangeText = end_date 
+  const dateRangeText = end_date
     ? `${formattedStartDate} to ${formattedEndDate}`
     : formattedStartDate;
 
   return (
-    <article 
+    <article
       className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1"
       aria-labelledby={`event-${id}-title`}
     >
@@ -71,12 +71,12 @@ const EventCard = ({
         </div>
       </div>
       <div className="p-5">
-        <Link 
+        <Link
           href={`/events/${id}`}
           aria-labelledby={`event-${id}-title`}
           className="focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-md"
         >
-          <h3 
+          <h3
             id={`event-${id}-title`}
             className="text-xl font-semibold mb-2 text-black hover:text-indigo-600 transition-colors"
           >
@@ -103,11 +103,12 @@ const EventCard = ({
               ></path>
             </svg>
             <div>
-              <p className="text-sm text-gray-700" aria-label={`Event date: ${dateRangeText}`}>
+              <p
+                className="text-sm text-gray-700"
+                aria-label={`Event date: ${dateRangeText}`}
+              >
                 {formattedStartDate}
-                {formattedEndDate && (
-                  <span> to {formattedEndDate}</span>
-                )}
+                {formattedEndDate && <span> to {formattedEndDate}</span>}
               </p>
             </div>
           </div>
@@ -133,7 +134,10 @@ const EventCard = ({
                 d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
               ></path>
             </svg>
-            <p className="text-sm text-gray-700" aria-label={`Event location: ${location}`}>
+            <p
+              className="text-sm text-gray-700"
+              aria-label={`Event location: ${location}`}
+            >
               {location}
             </p>
           </div>

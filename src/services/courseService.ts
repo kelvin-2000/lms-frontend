@@ -170,9 +170,9 @@ export const getCourses = async (
     console.error('Authentication required but no token found');
     throw new Error('Authentication required');
   }
-  
+
   let url = '';
-  
+
   // Use the dedicated instructor-specific endpoint for related courses if instructor_id is provided
   if (instructor_id) {
     url = `${API_BASE_URL}/instructors/${instructor_id}/related-courses?page=${page}&per_page=${perPage}`;
@@ -213,8 +213,15 @@ export const getCourses = async (
     };
 
     // Handle instructor related courses response format
-    if (instructor_id && responseData.success && responseData.data && responseData.data.courses) {
-      console.log(`Found ${responseData.data.courses.length} instructor related courses`);
+    if (
+      instructor_id &&
+      responseData.success &&
+      responseData.data &&
+      responseData.data.courses
+    ) {
+      console.log(
+        `Found ${responseData.data.courses.length} instructor related courses`,
+      );
       return {
         data: responseData.data.courses,
         current_page: page,

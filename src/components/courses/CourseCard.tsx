@@ -35,16 +35,19 @@ const CourseCard = ({
         return 'bg-gray-100 text-gray-800';
     }
   };
-  
+
   const formatUnderscoreText = (text: string) => {
     return text
       ?.split('_')
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
   };
-  
+
   return (
-    <article className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1" aria-labelledby={`course-${id}-title`}>
+    <article
+      className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1"
+      aria-labelledby={`course-${id}-title`}
+    >
       <div className="relative h-48 w-full">
         <Image
           src={thumbnailUrl || '/assets/courses/default.jpg'}
@@ -57,7 +60,7 @@ const CourseCard = ({
       <div className="p-5">
         <div className="flex justify-between items-center mb-2">
           <div className="flex items-center gap-2">
-            <span 
+            <span
               className="text-xs font-semibold px-2 py-1 rounded-full capitalize bg-yellow-100 text-gray-800"
               aria-label={`Category: ${formatUnderscoreText(category)}`}
             >
@@ -70,31 +73,33 @@ const CourseCard = ({
               {level}
             </span>
           </div>
-          <span 
+          <span
             className="text-sm text-gray-500"
             aria-label={`Course duration: ${duration}`}
           >
             {duration}
           </span>
         </div>
-        
-        <Link 
+
+        <Link
           href={`/courses/${id}`}
           aria-labelledby={`course-${id}-title`}
           className="focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 rounded-md"
         >
-          <h3 
+          <h3
             id={`course-${id}-title`}
             className="text-xl font-semibold mb-2 text-black hover:text-indigo-600 transition-colors"
           >
             {title}
           </h3>
         </Link>
-        
-        <p className="text-gray-600 text-sm mb-4">By <span className="font-medium">{instructor}</span></p>
-        
+
+        <p className="text-gray-600 text-sm mb-4">
+          By <span className="font-medium">{instructor}</span>
+        </p>
+
         <div className="flex justify-between items-center">
-          <span 
+          <span
             className="font-bold text-lg text-black"
             aria-label={price === '0.00' ? 'Free course' : `Price: $${price}`}
           >

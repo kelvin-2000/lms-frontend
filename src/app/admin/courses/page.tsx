@@ -53,7 +53,7 @@ const CoursesPage = () => {
 
       // For instructors, pass the instructor's ID to fetch only their related courses
       const instructorId = user?.role === 'instructor' ? user.id : undefined;
-      
+
       const response = await getCourses(page, perPage, instructorId);
       console.log('Courses response:', response);
 
@@ -290,8 +290,10 @@ const CoursesPage = () => {
 
   return (
     <div>
-      <h1 className="text-3xl font-bold mt-6 mb-2 text-center">Manage Courses</h1>
-      
+      <h1 className="text-3xl font-bold mt-6 mb-2 text-center">
+        Manage Courses
+      </h1>
+
       {user?.role === 'instructor' && (
         <p className="text-center text-gray-600 mb-6">
           Showing courses you are assigned to as an instructor

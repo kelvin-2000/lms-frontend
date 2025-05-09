@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import '@/styles/globals.css';
 
 // Types
 type CourseLevel = 'beginner' | 'intermediate' | 'advanced';
